@@ -1,13 +1,13 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App'
-import { MessageProvider } from './components/MessageProvider'
+import Home from './pages/home'
+import { MessageProvider } from './components/message-provider'
 import './styles/index.scss'
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <MessageProvider>
-      <App />
+      <Home />
     </MessageProvider>
   </React.StrictMode>
 )

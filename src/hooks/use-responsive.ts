@@ -1,10 +1,11 @@
 import { useState, useCallback, useEffect } from 'react'
+import { UseResponsiveReturn } from '../types'
 
-export function useResponsive() {
-  const [columns, setColumns] = useState(4)
-  const [isMobile, setIsMobile] = useState(false)
+export function useResponsive(): UseResponsiveReturn {
+  const [columns, setColumns] = useState<number>(4)
+  const [isMobile, setIsMobile] = useState<boolean>(false)
 
-  const updateLayout = useCallback(() => {
+  const updateLayout = useCallback((): void => {
     const width = window.innerWidth
     if (width < 600) {
       setColumns(2)
@@ -18,10 +19,10 @@ export function useResponsive() {
     }
   }, [])
 
-  useEffect(() => {
+  useEffect((): (() => void) => {
     updateLayout()
     window.addEventListener('resize', updateLayout)
-    return () => window.removeEventListener('resize', updateLayout)
+    return (): void => window.removeEventListener('resize', updateLayout)
   }, [updateLayout])
 
   return { columns, isMobile }

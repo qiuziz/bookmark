@@ -1,34 +1,35 @@
-import { useRef, useEffect } from 'react'
-import './BookmarkCard.scss'
+import { useRef, useEffect, ReactElement } from 'react'
+import { BookmarkCardProps } from '../types'
+import './bookmark-card.scss'
 
-function BookmarkCard({ bookmark, onEdit, onDelete, onPin, isMobile, showActions = false, onActionsToggle }) {
-  const cardRef = useRef(null)
+function BookmarkCard({ bookmark, onEdit, onDelete, onPin, isMobile, showActions = false, onActionsToggle }: BookmarkCardProps): ReactElement {
+  const cardRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    const handleResize = () => {
+  useEffect((): (() => void) | void => {
+    const handleResize = (): void => {
       if (showActions && isMobile && onActionsToggle) {
         onActionsToggle()
       }
     }
 
     window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
+    return (): void => window.removeEventListener('resize', handleResize)
   }, [showActions, isMobile, onActionsToggle])
 
-  useEffect(() => {
+  useEffect((): (() => void) | void => {
     if (!showActions || !onActionsToggle) return
 
-    const handleClickOutside = (e) => {
-      if (cardRef.current && !cardRef.current.contains(e.target)) {
+    const handleClickOutside = (e: MouseEvent): void => {
+      if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
         onActionsToggle()
       }
     }
 
     document.addEventListener('click', handleClickOutside)
-    return () => document.removeEventListener('click', handleClickOutside)
+    return (): void => document.removeEventListener('click', handleClickOutside)
   }, [showActions, onActionsToggle])
 
-  const handleClick = (_e) => {
+  const handleClick = (_e: React.MouseEvent): void => {
     if (showActions && onActionsToggle) {
       onActionsToggle()
       return
@@ -36,24 +37,24 @@ function BookmarkCard({ bookmark, onEdit, onDelete, onPin, isMobile, showActions
     window.open(bookmark.url, '_blank')
   }
 
-  const handleEdit = (e) => {
+  const handleEdit = (e: React.MouseEvent): void => {
     e.stopPropagation()
     onEdit(bookmark)
   }
 
-  const handleDelete = (e) => {
+  const handleDelete = (e: React.MouseEvent): void => {
     e.stopPropagation()
     if (confirm('确定要删除这个书签吗？')) {
       onDelete(bookmark.id)
     }
   }
 
-  const handlePin = (e) => {
+  const handlePin = (e: React.MouseEvent): void => {
     e.stopPropagation()
     onPin(bookmark)
   }
 
-  const toggleActions = (e) => {
+  const toggleActions = (e: React.MouseEvent): void => {
     e.stopPropagation()
     e.preventDefault()
     if (onActionsToggle) {
@@ -79,7 +80,7 @@ function BookmarkCard({ bookmark, onEdit, onDelete, onPin, isMobile, showActions
         <span className="more-dots">···</span>
       </div>
       
-      <div className={`bookmark-actions-overlay ${showActions ? 'visible' : ''}`} onClick={(e) => e.stopPropagation()}>
+      <div className={`bookmark-actions-overlay ${showActions ? 'visible' : ''}`} onClick={(e: React.MouseEvent): void => e.stopPropagation()}>
           <button className="action-btn pin" onClick={handlePin}>
             {bookmark.isPinned ? '取消置顶' : '置顶'}
           </button>
