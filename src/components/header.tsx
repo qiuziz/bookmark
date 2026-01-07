@@ -1,6 +1,7 @@
-import './Header.scss'
+import { HeaderProps } from '../types'
+import './header.scss'
 
-function Header({ onAdd, onImport, onExport, onBack, onHome, currentPath }) {
+function Header({ onAdd, onImport, onExport, onBack, onHome, currentPath }: HeaderProps): React.ReactElement {
   return (
     <header className="header">
       <div className="header-left">
@@ -19,7 +20,7 @@ function Header({ onAdd, onImport, onExport, onBack, onHome, currentPath }) {
         <div className="header-title">书签小工具</div>
         {currentPath.length > 0 && (
           <div className="current-path">
-            {currentPath.map((path, index) => (
+            {currentPath.map((path: string, index: number) => (
               <span key={index} className="path-segment">
                 {path}
                 {index < currentPath.length - 1 && <span className="path-separator"> › </span>}

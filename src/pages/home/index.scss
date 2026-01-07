@@ -15,6 +15,13 @@
   box-sizing: border-box;
 }
 
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), 1fr);
+  gap: 16px;
+  width: 100%;
+}
+
 .bookmark-grid {
   display: grid;
   width: 100%;
@@ -81,9 +88,20 @@
   width: 100%;
 }
 
+.divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #e0e0e0 20%, #e0e0e0 80%, transparent);
+  margin: 24px 0;
+}
+
 @media (max-width: 768px) {
   .main-content {
     padding: 16px;
+  }
+
+  .cards-grid {
+    gap: 12px;
   }
 
   .empty-state {
@@ -115,5 +133,9 @@
 @media (max-width: 480px) {
   .main-content {
     padding: 12px;
+  }
+
+  .cards-grid {
+    gap: 10px;
   }
 }

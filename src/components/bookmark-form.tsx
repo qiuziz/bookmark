@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react'
-import './BookmarkForm.scss'
+import { useState, useEffect, ReactElement, FormEvent, ChangeEvent } from 'react'
+import { BookmarkFormProps } from '../types'
+import './bookmark-form.scss'
 
-function BookmarkForm({ bookmark, onSave, onCancel }) {
-  const [title, setTitle] = useState('')
-  const [url, setUrl] = useState('')
+function BookmarkForm({ bookmark, onSave, onCancel }: BookmarkFormProps): ReactElement {
+  const [title, setTitle] = useState<string>('')
+  const [url, setUrl] = useState<string>('')
 
-  useEffect(() => {
+  useEffect((): void => {
     if (bookmark) {
       setTitle(bookmark.title)
       setUrl(bookmark.url)
@@ -15,7 +16,7 @@ function BookmarkForm({ bookmark, onSave, onCancel }) {
     }
   }, [bookmark])
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent): void => {
     e.preventDefault()
     if (!title.trim() || !url.trim()) return
 
@@ -43,7 +44,7 @@ function BookmarkForm({ bookmark, onSave, onCancel }) {
               type="text"
               id="title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>): void => setTitle(e.target.value)}
               placeholder="请输入书签标题"
               autoFocus
             />
@@ -54,7 +55,7 @@ function BookmarkForm({ bookmark, onSave, onCancel }) {
               type="url"
               id="url"
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>): void => setUrl(e.target.value)}
               placeholder="请输入书签URL"
             />
           </div>

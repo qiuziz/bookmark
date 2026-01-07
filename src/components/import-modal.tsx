@@ -1,11 +1,12 @@
-import { useState, useRef } from 'react'
-import './ImportModal.scss'
+import { useState, useRef, ReactElement, ChangeEvent, DragEvent } from 'react'
+import { ImportModalProps } from '../types'
+import './import-modal.scss'
 
-function ImportModal({ onImport, onCancel }) {
-  const [dragActive, setDragActive] = useState(false)
-  const fileInputRef = useRef(null)
+function ImportModal({ onImport, onCancel }: ImportModalProps): ReactElement {
+  const [dragActive, setDragActive] = useState<boolean>(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleDrag = (e) => {
+  const handleDrag = (e: DragEvent<HTMLDivElement>): void => {
     e.preventDefault()
     e.stopPropagation()
     if (e.type === 'dragenter' || e.type === 'dragover') {
@@ -15,7 +16,7 @@ function ImportModal({ onImport, onCancel }) {
     }
   }
 
-  const handleDrop = (e) => {
+  const handleDrop = (e: DragEvent<HTMLDivElement>): void => {
     e.preventDefault()
     e.stopPropagation()
     setDragActive(false)
@@ -24,28 +25,28 @@ function ImportModal({ onImport, onCancel }) {
     }
   }
 
-  const handleFileChange = (e) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>): void => {
     e.preventDefault()
     if (e.target.files && e.target.files[0]) {
       handleFile(e.target.files[0])
     }
   }
 
-  const handleFile = (file) => {
+  const handleFile = (file: File): void => {
     if (file.type !== 'text/html' && !file.name.endsWith('.html')) {
       alert('请选择HTML格式的书签文件')
       return
     }
 
     const reader = new FileReader()
-    reader.onload = (e) => {
-      const content = e.target?.result
+    reader.onload = (e: ProgressEvent<FileReader>): void => {
+      const content = e.target?.result as string
       onImport(content, file.name)
     }
     reader.readAsText(file)
   }
 
-  const onButtonClick = () => {
+  const onButtonClick = (): void => {
     fileInputRef.current?.click()
   }
 
