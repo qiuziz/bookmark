@@ -1,0 +1,119 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.main-content {
+  flex: 1;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.bookmark-grid {
+  display: grid;
+  width: 100%;
+}
+
+.draggable-item {
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  color: #999;
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #666;
+  margin: 0 0 8px;
+}
+
+.empty-state p {
+  font-size: 14px;
+  margin: 0;
+}
+
+.pinned-section {
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px dashed #e0e0e0;
+}
+
+.pinned-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  margin: 0 0 16px;
+  
+  .pin-icon {
+    font-size: 16px;
+  }
+}
+
+.pinned-grid {
+  display: grid;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 16px;
+  }
+
+  .empty-state {
+    min-height: 50vh;
+  }
+
+  .empty-icon {
+    font-size: 48px;
+  }
+
+  .empty-state h3 {
+    font-size: 16px;
+  }
+
+  .empty-state p {
+    font-size: 13px;
+  }
+
+  .pinned-section {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+  }
+
+  .pinned-section-title {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 12px;
+  }
+}

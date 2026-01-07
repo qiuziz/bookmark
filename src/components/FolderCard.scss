@@ -1,0 +1,101 @@
+.folder-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 12px;
+  background: #fff;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  position: relative;
+  min-height: 100px;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    
+    .folder-icon {
+      transform: scale(1.1);
+    }
+    
+    .folder-title {
+      color: #fff;
+    }
+  }
+
+  &:active {
+    transform: translateY(-2px);
+  }
+}
+
+.folder-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.folder-info {
+  width: 100%;
+  text-align: center;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.folder-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s;
+  max-width: 100%;
+}
+
+.folder-card.mobile {
+  padding: 12px 8px;
+  min-height: 80px;
+
+  .folder-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
+  .folder-title {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .folder-card {
+    padding: 12px 6px;
+    min-height: 70px;
+
+    .folder-icon {
+      width: 36px;
+      height: 36px;
+      font-size: 18px;
+      border-radius: 8px;
+    }
+
+    .folder-title {
+      font-size: 11px;
+    }
+  }
+}
