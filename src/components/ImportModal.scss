@@ -1,0 +1,164 @@
+.import-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.import-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 420px;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.import-modal h2 {
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+}
+
+.import-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.import-content > p {
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+.file-drop-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  padding: 32px 24px;
+  background: #f8f9fa;
+  border: 2px dashed #e0e0e0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 160px;
+}
+
+.file-drop-area.active {
+  background: #e8f0fe;
+  border-color: #4285f4;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-drop-content {
+  text-align: center;
+}
+
+.file-drop-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  color: #999;
+  transition: color 0.2s ease;
+}
+
+.file-drop-area.active .file-drop-icon {
+  color: #4285f4;
+}
+
+.file-drop-content > p {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.file-drop-hint {
+  font-size: 12px;
+  color: #999;
+  display: block;
+}
+
+.import-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.btn-cancel {
+  padding: 10px 24px;
+  background: #f5f7fa;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+.btn-cancel:hover {
+  background: #e8ebf0;
+  color: #333;
+}
+
+@media (max-width: 480px) {
+  .import-modal {
+    border-radius: 12px;
+    padding: 20px;
+  }
+  
+  .import-modal h2 {
+    font-size: 18px;
+  }
+  
+  .file-drop-area {
+    padding: 24px 16px;
+    min-height: 140px;
+  }
+  
+  .file-drop-icon {
+    font-size: 40px;
+  }
+  
+  .btn-cancel {
+    padding: 8px 20px;
+    font-size: 13px;
+    min-width: 90px;
+  }
+}
