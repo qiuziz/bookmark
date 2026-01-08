@@ -1,6 +1,6 @@
 import { useState, useRef, ReactElement, ChangeEvent, DragEvent } from 'react'
-import { ImportModalProps } from '../types'
-import './import-modal.scss'
+import { ImportModalProps } from '../../types'
+import './index.scss'
 
 function ImportModal({ onImport, onCancel }: ImportModalProps): ReactElement {
   const [dragActive, setDragActive] = useState<boolean>(false)

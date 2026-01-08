@@ -1,6 +1,6 @@
 import { useRef, useCallback, useEffect } from 'react'
-import { FolderCardProps } from '../types'
-import './folder-card.scss'
+import { FolderCardProps } from '../../types'
+import './index.scss'
 
 function FolderCard({ folder, onClick, onRename, onDelete, isMobile, showActions = false, onActionsToggle }: FolderCardProps): React.ReactElement {
   const cardRef = useRef<HTMLDivElement>(null)

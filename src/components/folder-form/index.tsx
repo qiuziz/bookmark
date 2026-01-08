@@ -1,7 +1,7 @@
 import { useState, useEffect, ReactElement, FormEvent, ChangeEvent } from 'react'
-import { Folder, FolderFormProps } from '../types'
-import FolderSelector from './folder-selector'
-import './folder-form.scss'
+import { Folder, FolderFormProps } from '../../types'
+import FolderSelector from '../folder-selector'
+import './index.scss'
 
 function FolderForm({ folders, currentPath, currentFolderId, mode = 'create', editFolder, onSave, onCancel }: FolderFormProps): ReactElement {
   const [title, setTitle] = useState<string>('')
