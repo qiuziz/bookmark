@@ -7,5 +7,12 @@ export default defineConfig({
     port: 3000,
     open: true
   },
-  appType: 'spa'
+  appType: 'spa',
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: 'modern'
+      }
+    }
+  }
 })
