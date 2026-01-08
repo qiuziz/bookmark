@@ -8,7 +8,7 @@ export default defineConfig({
     open: true
   },
   appType: 'spa',
-  base: '/q/bookmark/',
+  base: '/bookmark/',
   build: {
     outDir: 'dist/bookmark-tool'
   },
