@@ -6,6 +6,8 @@ A modern, responsive bookmark management application built with React and TypeSc
 
 Bookmark Tool is a web-based application designed to help you organize, manage, and import/export your bookmarks efficiently. With a clean, responsive interface, it provides an intuitive way to browse and organize your bookmark collection, supporting hierarchical folder structures and import/export functionality for Edge browser bookmark files.
 
+[中文简介 / Chinese Introduction](./README_CN.md)
+
 ## Why This Project
 
 Managing bookmarks across different browsers and devices can be challenging. Many users accumulate a large number of bookmarks over time but lack effective tools to organize them. This project was created to provide:
