@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "changelog": "auto-changelog -p && git add CHANGELOG.md"
+    "changelog": "auto-changelog --unreleased && git add CHANGELOG.md"
   },
   "dependencies": {
     "react": "^18.3.1",
