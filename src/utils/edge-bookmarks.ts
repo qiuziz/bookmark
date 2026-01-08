@@ -80,39 +80,22 @@ function exportBookmarks(folders: Folder[], bookmarks: Bookmark[]): string {
 <H1>Bookmarks</H1>
 <DL><p>`
 
-  const bookmarksByPath = new Map<string, Bookmark[]>()
-  const foldersByPath = new Map<string, Folder[]>()
-
-  bookmarks.forEach(bookmark => {
-    const pathKey = JSON.stringify(bookmark.path)
-    if (!bookmarksByPath.has(pathKey)) {
-      bookmarksByPath.set(pathKey, [])
-    }
-    bookmarksByPath.get(pathKey)!.push(bookmark)
-  })
-
-  folders.forEach(folder => {
-    const pathKey = JSON.stringify(folder.path)
-    if (!foldersByPath.has(pathKey)) {
-      foldersByPath.set(pathKey, [])
-    }
-    foldersByPath.get(pathKey)!.push(folder)
-  })
-
-  function buildHtml(path: string[], level: number = 0): string {
+  // 按parentId组织文件夹和书签
+  function buildHtml(parentId: string | null, level: number = 0): string {
     let result = ''
     const indent = '  '.repeat(level + 1)
-    const pathKey = JSON.stringify(path)
     
-    const currentFolders = foldersByPath.get(pathKey) || []
-    for (const folder of currentFolders) {
-      result += `${indent}<DT><H3>${escapeHtml(folder.title)}</H3>\n`
+    // 处理当前父文件夹下的子文件夹
+    const childFolders = folders.filter(folder => folder.parentId === parentId)
+    for (const folder of childFolders) {
+      result += `${indent}<DT><H3 ADD_DATE="${Math.floor(Date.now() / 1000)}">${escapeHtml(folder.title)}</H3>\n`
       result += `${indent}<DL><p>\n`
-      result += buildHtml([...path, folder.title], level + 1)
+      result += buildHtml(folder.id, level + 1)
       result += `${indent}</DL><p>\n`
     }
     
-    const childBookmarks = bookmarksByPath.get(pathKey) || []
+    // 处理当前父文件夹下的书签
+    const childBookmarks = bookmarks.filter(bookmark => bookmark.parentId === parentId)
     for (const bookmark of childBookmarks) {
       const pinnedAttr = bookmark.isPinned ? ' CUSTOM_PINNED="true"' : ''
       result += `${indent}<DT><A HREF="${escapeHtml(bookmark.url)}" ADD_DATE="${Math.floor(Date.now() / 1000)}"${pinnedAttr}>${escapeHtml(bookmark.title)}</A>\n`
@@ -121,7 +104,7 @@ function exportBookmarks(folders: Folder[], bookmarks: Bookmark[]): string {
     return result
   }
 
-  html += buildHtml([])
+  html += buildHtml(null)
   html += `</DL><p>`
   
   return html

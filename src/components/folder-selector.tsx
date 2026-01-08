@@ -13,7 +13,7 @@ interface FolderWithDepth extends Folder {
   depth: number
 }
 
-function FolderSelector({ folders, currentPath, value, onChange }: FolderSelectorProps): ReactElement {
+function FolderSelector({ folders, value, onChange }: FolderSelectorProps): ReactElement {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
