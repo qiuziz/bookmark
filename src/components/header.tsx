@@ -1,5 +1,5 @@
 import { HeaderProps } from '../types'
-import './Header.scss'
+import './header.scss'
 
 function Header({ onAdd, onAddFolder, onImport, onExport, onBack, onHome, currentPath }: HeaderProps): React.ReactElement {
   return (
