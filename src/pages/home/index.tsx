@@ -1,4 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, ReactElement } from 'react';
+
+const BASENAME = '/q/bookmark';
 import Header from '../../components/header';
 import BookmarkCard from '../../components/bookmark-card';
 import FolderCard from '../../components/folder-card';
@@ -310,7 +312,12 @@ function Home(): ReactElement {
   }, []);
 
   useEffect((): (() => void) | void => {
-    const pathString = window.location.pathname.slice(1);
+    let pathString = window.location.pathname;
+    if (pathString.startsWith(BASENAME)) {
+      pathString = pathString.slice(BASENAME.length + 1);
+    } else {
+      pathString = pathString.slice(1);
+    }
     if (pathString) {
       try {
         const path = JSON.parse(decodeURIComponent(pathString));
@@ -323,7 +330,12 @@ function Home(): ReactElement {
 
   useEffect((): (() => void) | void => {
     const handlePopState = (): void => {
-      const pathString = window.location.pathname.slice(1);
+      let pathString = window.location.pathname;
+      if (pathString.startsWith(BASENAME)) {
+        pathString = pathString.slice(BASENAME.length + 1);
+      } else {
+        pathString = pathString.slice(1);
+      }
       if (pathString) {
         try {
           const path = JSON.parse(decodeURIComponent(pathString));
@@ -341,14 +353,10 @@ function Home(): ReactElement {
   }, []);
 
   useEffect((): void => {
-    const pathString = window.location.pathname.slice(1);
-    const expectedPath =
+    const expectedPath = 
       currentPath.length > 0 ? encodeURIComponent(JSON.stringify(currentPath)) : '';
-
-    if (pathString !== expectedPath) {
-      const newPath = currentPath.length > 0 ? '/' + expectedPath : '/';
-      window.history.pushState(null, '', newPath);
-    }
+    const newPath = currentPath.length > 0 ? `${BASENAME}/${expectedPath}` : BASENAME;
+    window.history.pushState(null, '', newPath);
   }, [currentPath]);
 
   const handlePin = useCallback(
