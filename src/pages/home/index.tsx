@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, ReactElement } from 'react';
 
-const BASENAME = '/q/bookmark';
+const BASENAME = '/bookmark';
 import Header from '../../components/header';
 import BookmarkCard from '../../components/bookmark-card';
 import FolderCard from '../../components/folder-card';
