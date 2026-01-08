@@ -1,7 +1,7 @@
 import { HeaderProps } from '../types'
 import './header.scss'
 
-function Header({ onAdd, onImport, onExport, onBack, onHome, currentPath }: HeaderProps): React.ReactElement {
+function Header({ onAdd, onAddFolder, onImport, onExport, onBack, onHome, currentPath }: HeaderProps): React.ReactElement {
   return (
     <header className="header">
       <div className="header-left">
@@ -30,6 +30,10 @@ function Header({ onAdd, onImport, onExport, onBack, onHome, currentPath }: Head
         )}
       </div>
       <div className="header-right">
+        <button className="header-btn add-folder" onClick={onAddFolder} title="新建文件夹">
+          <span className="btn-icon">📁+</span>
+          <span className="btn-text">新建文件夹</span>
+        </button>
         <button className="header-btn export" onClick={onExport} title="导出书签">
           <span className="btn-icon">📤</span>
           <span className="btn-text">导出</span>

@@ -82,6 +82,15 @@ export function useBookmarks(): UseBookmarksReturn {
     return newFolder
   }, [])
 
+  const updateFolder = useCallback((id: string, updates: Partial<Folder>): void => {
+    setFolders((prev: Folder[]): Folder[] => prev.map((f: Folder): Folder => f.id === id ? { ...f, ...updates } : f))
+  }, [])
+
+  const deleteFolder = useCallback((id: string): void => {
+    setFolders((prev: Folder[]): Folder[] => prev.filter((f: Folder): boolean => f.id !== id))
+    setBookmarks((prev: Bookmark[]): Bookmark[] => prev.filter((b: Bookmark): boolean => b.parentId !== id))
+  }, [])
+
   const importBookmarks = useCallback((importedBookmarks: Bookmark[], importedFolders?: Folder[]): void => {
     setBookmarks((prev: Bookmark[]): Bookmark[] => {
       const existingUrls = new Set(prev.map((b: Bookmark): string => b.url))
@@ -106,6 +115,8 @@ export function useBookmarks(): UseBookmarksReturn {
     reorderBookmarks,
     togglePinBookmark,
     addFolder,
+    updateFolder,
+    deleteFolder,
     importBookmarks
   }
 }
