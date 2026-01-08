@@ -1,6 +1,6 @@
 import { useRef, useEffect, ReactElement } from 'react'
-import { BookmarkCardProps } from '../types'
-import './bookmark-card.scss'
+import { BookmarkCardProps } from '../../types'
+import './index.scss'
 
 function BookmarkCard({ bookmark, onEdit, onDelete, onPin, isMobile, showActions = false, onActionsToggle }: BookmarkCardProps): ReactElement {
   const cardRef = useRef<HTMLDivElement>(null)

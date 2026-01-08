@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, ReactElement } from 'react'
-import { Folder } from '../types'
-import './folder-selector.scss'
+import { Folder } from '../../types'
+import './index.scss'
 
 interface FolderSelectorProps {
   folders: Folder[]

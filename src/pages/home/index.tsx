@@ -9,7 +9,7 @@ import FolderForm from '../../components/folder-form';
 import ImportModal from '../../components/import-modal';
 import { useBookmarks } from '../../hooks/use-bookmarks';
 import { useResponsive } from '../../hooks/use-responsive';
-import { useMessage } from '../../components/message-provider';
+import { useMessage } from '../../components/message';
 import { parseEdgeBookmarks, exportBookmarks } from '../../utils/edge-bookmarks';
 import { Bookmark, Folder, BookmarkFormData, FolderFormData } from '../../types';
 import './index.scss';
@@ -36,7 +36,30 @@ function Home(): ReactElement {
   const [showFolderForm, setShowFolderForm] = useState<boolean>(false);
   const [showImportModal, setShowImportModal] = useState<boolean>(false);
   const [currentPath, setCurrentPath] = useState<string[]>([]);
-  const [activeCardId, setActiveCardId] = useState<string | null>(null);
+  const [activeCardId, setActiveCardId] = useState<{id: string, type: 'pinned' | 'regular' | 'folder'} | null>(null);
+
+  const handleExport = useCallback((): void => {
+    const htmlContent = exportBookmarks(folders, bookmarks);
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=UTF-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `bookmarks_${new Date().toISOString().split('T')[0]}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showMessage(`成功导出 ${folders.length} 个文件夹和 ${bookmarks.length} 个书签`, 'success');
+  }, [folders, bookmarks, showMessage]);
+
+  const showExportConfirm = useCallback((): void => {
+    showMessage('书签已更新', 'success', [
+      {
+        text: '导出',
+        onClick: () => handleExport()
+      }
+    ]);
+  }, [showMessage, handleExport]);
 
   const currentFolderId: string | null = useMemo(() => {
    if (currentPath.length === 0) return null;
@@ -92,7 +115,7 @@ function Home(): ReactElement {
   }, [bookmarks]);
 
   const regularBookmarks: Bookmark[] = useMemo((): Bookmark[] => {
-    return currentBookmarks.filter((b: Bookmark): boolean => !b.isPinned);
+    return currentBookmarks;
   }, [currentBookmarks]);
 
   const displayItems: (Folder | Bookmark)[] = useMemo((): (Folder | Bookmark)[] => {
@@ -153,8 +176,9 @@ function Home(): ReactElement {
       }
       setShowForm(false);
       setEditingBookmark(null);
+      showExportConfirm();
     },
-    [editingBookmark, updateBookmark, addBookmark, currentFolderId, currentPath]
+    [editingBookmark, updateBookmark, addBookmark, currentFolderId, currentPath, showExportConfirm]
   );
 
   const handleCancel = useCallback((): void => {
@@ -185,8 +209,9 @@ function Home(): ReactElement {
         setShowFolderForm(false);
         showMessage(`已创建文件夹「${formData.title}」`, 'success');
       }
+      showExportConfirm();
     },
-    [folderFormMode, editingFolder, addFolder, updateFolder, showMessage]
+    [folderFormMode, editingFolder, addFolder, updateFolder, showMessage, showExportConfirm]
   );
 
   const handleRenameFolder = useCallback((folder: Folder): void => {
@@ -200,8 +225,9 @@ function Home(): ReactElement {
     if (folder) {
       deleteFolder(folderId);
       showMessage(`已删除文件夹「${folder.title}」`, 'success');
+      showExportConfirm();
     }
-  }, [folders, deleteFolder, showMessage]);
+  }, [folders, deleteFolder, showMessage, showExportConfirm]);
 
   const handleOpenImport = useCallback((): void => {
     setShowImportModal(true);
@@ -285,19 +311,7 @@ function Home(): ReactElement {
     setShowImportModal(false);
   }, []);
 
-  const handleExport = useCallback((): void => {
-    const htmlContent = exportBookmarks(folders, bookmarks);
-    const blob = new Blob([htmlContent], { type: 'text/html;charset=UTF-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `bookmarks_${new Date().toISOString().split('T')[0]}.html`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    showMessage(`成功导出 ${folders.length} 个文件夹和 ${bookmarks.length} 个书签`, 'success');
-  }, [folders, bookmarks, showMessage]);
+
 
   const handleFolderClick = useCallback((folder: Folder): void => {
     setCurrentPath((prev: string[]): string[] => [...prev, folder.title]);
@@ -362,13 +376,22 @@ function Home(): ReactElement {
   const handlePin = useCallback(
     (bookmark: Bookmark): void => {
       togglePinBookmark(bookmark.id);
+      showExportConfirm();
     },
-    [togglePinBookmark]
+    [togglePinBookmark, showExportConfirm]
   );
 
-  const handleCardActionsToggle = useCallback((bookmarkId: string): void => {
-    setActiveCardId((prev: string | null): string | null =>
-      prev === bookmarkId ? null : bookmarkId
+  const handleDeleteBookmark = useCallback(
+    (bookmarkId: string): void => {
+      deleteBookmark(bookmarkId);
+      showExportConfirm();
+    },
+    [deleteBookmark, showExportConfirm]
+  );
+
+  const handleCardActionsToggle = useCallback((cardId: string, cardType: 'pinned' | 'regular' | 'folder'): void => {
+    setActiveCardId((prev: {id: string, type: 'pinned' | 'regular' | 'folder'} | null): {id: string, type: 'pinned' | 'regular' | 'folder'} | null =>
+      prev?.id === cardId && prev?.type === cardType ? null : {id: cardId, type: cardType}
     );
   }, []);
 
@@ -402,13 +425,11 @@ function Home(): ReactElement {
                       key={`pinned-${bookmark.id}-${index}`}
                       bookmark={bookmark}
                       onEdit={handleEdit}
-                      onDelete={deleteBookmark}
+                      onDelete={handleDeleteBookmark}
                       onPin={handlePin}
                       isMobile={isMobile}
-                      showActions={activeCardId === bookmark.id}
-                      onActionsToggle={
-                        isMobile ? () => handleCardActionsToggle(bookmark.id) : undefined
-                      }
+                      showActions={activeCardId?.id === bookmark.id && activeCardId?.type === 'pinned'}
+                      onActionsToggle={() => handleCardActionsToggle(bookmark.id, 'pinned')}
                     />
                   ))}
                 </div>
@@ -430,13 +451,11 @@ function Home(): ReactElement {
                       key={`bookmark-${item.id}-${index}`}
                       bookmark={item}
                       onEdit={handleEdit}
-                      onDelete={deleteBookmark}
+                      onDelete={handleDeleteBookmark}
                       onPin={handlePin}
                       isMobile={isMobile}
-                      showActions={activeCardId === item.id}
-                      onActionsToggle={
-                        isMobile ? () => handleCardActionsToggle(item.id) : undefined
-                      }
+                      showActions={activeCardId?.id === item.id && activeCardId?.type === 'regular'}
+                      onActionsToggle={() => handleCardActionsToggle(item.id, 'regular')}
                     />
                   );
                 }
@@ -448,8 +467,8 @@ function Home(): ReactElement {
                     onRename={handleRenameFolder}
                     onDelete={handleDeleteFolder}
                     isMobile={isMobile}
-                    showActions={activeCardId === item.id}
-                    onActionsToggle={isMobile ? () => handleCardActionsToggle(item.id) : undefined}
+                    showActions={activeCardId?.id === item.id && activeCardId?.type === 'folder'}
+                    onActionsToggle={() => handleCardActionsToggle(item.id, 'folder')}
                   />
                 );
               })}

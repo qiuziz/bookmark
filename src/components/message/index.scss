@@ -86,6 +86,58 @@
   }
 }
 
+.message.has-actions {
+  gap: 12px;
+  min-height: 48px;
+}
+
+.message-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: 8px;
+}
+
+.message-action-btn {
+  padding: 6px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  background: white;
+  color: #1565c0;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.message-action-btn:hover {
+  background: #1565c0;
+  color: white;
+  border-color: #1565c0;
+}
+
+.message-success .message-action-btn {
+  color: #2e7d32;
+  border-color: rgba(46, 125, 50, 0.3);
+}
+
+.message-success .message-action-btn:hover {
+  background: #2e7d32;
+  color: white;
+  border-color: #2e7d32;
+}
+
+.message-error .message-action-btn {
+  color: #d32f2f;
+  border-color: rgba(211, 47, 47, 0.3);
+}
+
+.message-error .message-action-btn:hover {
+  background: #d32f2f;
+  color: white;
+  border-color: #d32f2f;
+}
+
 @keyframes slideOut {
   from {
     transform: translateX(0);

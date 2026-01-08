@@ -20,10 +20,16 @@ export interface Folder {
 }
 
 // 消息类型
+export interface MessageAction {
+  text: string;
+  onClick: () => void;
+}
+
 export interface Message {
   id: string;
   text: string;
   type: 'success' | 'error' | 'info';
+  actions?: MessageAction[];
 }
 
 // 书签表单数据类型

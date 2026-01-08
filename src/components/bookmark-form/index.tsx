@@ -1,6 +1,6 @@
 import { useState, useEffect, ReactElement, FormEvent, ChangeEvent } from 'react'
-import { BookmarkFormProps } from '../types'
-import './bookmark-form.scss'
+import { BookmarkFormProps } from '../../types'
+import './index.scss'
 
 function BookmarkForm({ bookmark, onSave, onCancel }: BookmarkFormProps): ReactElement {
   const [title, setTitle] = useState<string>('')
