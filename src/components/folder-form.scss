@@ -1,0 +1,175 @@
+.folder-form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.folder-form {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+  padding: 24px;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.folder-form h2 {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input {
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 15px;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.form-group input:focus {
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.1);
+}
+
+.form-group input::placeholder {
+  color: #999;
+}
+
+.folder-location {
+  padding: 12px 16px;
+  background: #f5f5f5;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #666;
+}
+
+.location-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.location-info::before {
+  content: '📁';
+  font-size: 16px;
+}
+
+.folder-select {
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 15px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 40px;
+}
+
+.folder-select:focus {
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.form-actions button {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.btn-cancel:hover {
+  background: #ebebeb;
+}
+
+.btn-save {
+  background: #4a90d9;
+  color: #fff;
+}
+
+.btn-save:hover {
+  background: #3a7bc8;
+}
+
+@media (max-width: 480px) {
+  .folder-form {
+    padding: 20px;
+    margin: 10px;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+}

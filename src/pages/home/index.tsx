@@ -3,12 +3,13 @@ import Header from '../../components/header';
 import BookmarkCard from '../../components/bookmark-card';
 import FolderCard from '../../components/folder-card';
 import BookmarkForm from '../../components/bookmark-form';
+import FolderForm from '../../components/folder-form';
 import ImportModal from '../../components/import-modal';
 import { useBookmarks } from '../../hooks/use-bookmarks';
 import { useResponsive } from '../../hooks/use-responsive';
 import { useMessage } from '../../components/message-provider';
 import { parseEdgeBookmarks, exportBookmarks } from '../../utils/edge-bookmarks';
-import { Bookmark, Folder, BookmarkFormData } from '../../types';
+import { Bookmark, Folder, BookmarkFormData, FolderFormData } from '../../types';
 import './index.scss';
 
 function Home(): ReactElement {
@@ -19,18 +20,24 @@ function Home(): ReactElement {
     updateBookmark,
     deleteBookmark,
     togglePinBookmark,
-    importBookmarks
+    importBookmarks,
+    addFolder,
+    updateFolder,
+    deleteFolder
   } = useBookmarks();
   const { isMobile, columns } = useResponsive();
   const { showMessage } = useMessage();
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
+  const [editingFolder, setEditingFolder] = useState<Folder | null>(null);
+  const [folderFormMode, setFolderFormMode] = useState<'create' | 'rename'>('create');
   const [showForm, setShowForm] = useState<boolean>(false);
+  const [showFolderForm, setShowFolderForm] = useState<boolean>(false);
   const [showImportModal, setShowImportModal] = useState<boolean>(false);
   const [currentPath, setCurrentPath] = useState<string[]>([]);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
 
   const currentFolderId: string | null = useMemo(() => {
-    if (currentPath.length === 0) return null;
+   if (currentPath.length === 0) return null;
     const pathString = JSON.stringify(currentPath);
     const folder = folders.find((f: Folder): boolean => JSON.stringify(f.path) === pathString);
     return folder?.id || null;
@@ -79,8 +86,8 @@ function Home(): ReactElement {
   }, [currentPath, bookmarks, currentFolderId]);
 
   const pinnedBookmarks: Bookmark[] = useMemo((): Bookmark[] => {
-    return currentBookmarks.filter((b: Bookmark): boolean => b.isPinned);
-  }, [currentBookmarks]);
+    return bookmarks.filter((b: Bookmark): boolean => b.isPinned);
+  }, [bookmarks]);
 
   const regularBookmarks: Bookmark[] = useMemo((): Bookmark[] => {
     return currentBookmarks.filter((b: Bookmark): boolean => !b.isPinned);
@@ -111,11 +118,15 @@ function Home(): ReactElement {
     return items;
   }, [currentFolders, regularBookmarks]);
 
-  const hasContent: boolean = displayItems.length > 0 || pinnedBookmarks.length > 0;
+  const hasContent: boolean = displayItems.length > 0 || (currentPath.length === 0 && pinnedBookmarks.length > 0);
 
   const handleAdd = useCallback((): void => {
     setEditingBookmark(null);
     setShowForm(true);
+  }, []);
+
+  const handleAddFolder = useCallback((): void => {
+    setShowFolderForm(true);
   }, []);
 
   const handleEdit = useCallback((bookmark: Bookmark): void => {
@@ -148,6 +159,47 @@ function Home(): ReactElement {
     setShowForm(false);
     setEditingBookmark(null);
   }, []);
+
+  const handleCancelFolder = useCallback((): void => {
+    setShowFolderForm(false);
+    setEditingFolder(null);
+    setFolderFormMode('create');
+  }, []);
+
+  const handleSaveFolder = useCallback(
+    (formData: FolderFormData): void => {
+      if (folderFormMode === 'rename' && editingFolder) {
+        updateFolder(editingFolder.id, { title: formData.title });
+        setShowFolderForm(false);
+        setEditingFolder(null);
+        setFolderFormMode('create');
+        showMessage(`已重命名文件夹为「${formData.title}」`, 'success');
+      } else {
+        addFolder({
+          title: formData.title,
+          parentId: formData.parentId ?? null,
+          path: formData.path || []
+        });
+        setShowFolderForm(false);
+        showMessage(`已创建文件夹「${formData.title}」`, 'success');
+      }
+    },
+    [folderFormMode, editingFolder, addFolder, updateFolder, showMessage]
+  );
+
+  const handleRenameFolder = useCallback((folder: Folder): void => {
+    setEditingFolder(folder);
+    setFolderFormMode('rename');
+    setShowFolderForm(true);
+  }, []);
+
+  const handleDeleteFolder = useCallback((folderId: string): void => {
+    const folder = folders.find((f: Folder): boolean => f.id === folderId);
+    if (folder) {
+      deleteFolder(folderId);
+      showMessage(`已删除文件夹「${folder.title}」`, 'success');
+    }
+  }, [folders, deleteFolder, showMessage]);
 
   const handleOpenImport = useCallback((): void => {
     setShowImportModal(true);
@@ -316,6 +368,7 @@ function Home(): ReactElement {
     <div className="app">
       <Header
         onAdd={handleAdd}
+        onAddFolder={handleAddFolder}
         onImport={handleOpenImport}
         onExport={handleExport}
         onBack={currentPath.length > 0 ? handleBack : undefined}
@@ -326,7 +379,7 @@ function Home(): ReactElement {
       <main className="main-content">
         {hasContent ? (
           <>
-            {pinnedBookmarks.length > 0 && (
+            {currentPath.length === 0 && pinnedBookmarks.length > 0 && (
               <>
                 <div
                   className="cards-grid"
@@ -384,7 +437,11 @@ function Home(): ReactElement {
                     key={`folder-${item.id}-${index}`}
                     folder={item}
                     onClick={handleFolderClick}
+                    onRename={handleRenameFolder}
+                    onDelete={handleDeleteFolder}
                     isMobile={isMobile}
+                    showActions={activeCardId === item.id}
+                    onActionsToggle={isMobile ? () => handleCardActionsToggle(item.id) : undefined}
                   />
                 );
               })}
@@ -404,6 +461,18 @@ function Home(): ReactElement {
       )}
 
       {showImportModal && <ImportModal onImport={handleImport} onCancel={handleCloseImport} />}
+
+      {showFolderForm && (
+        <FolderForm
+          folders={folders}
+          currentPath={currentPath}
+          currentFolderId={currentFolderId}
+          mode={folderFormMode}
+          editFolder={editingFolder}
+          onSave={handleSaveFolder}
+          onCancel={handleCancelFolder}
+        />
+      )}
     </div>
   );
 }

@@ -46,6 +46,7 @@ export interface ImportedData {
 // Header 组件属性
 export interface HeaderProps {
   onAdd: () => void;
+  onAddFolder: () => void;
   onImport: () => void;
   onExport: () => void;
   onBack?: () => void;
@@ -57,7 +58,11 @@ export interface HeaderProps {
 export interface FolderCardProps {
   folder: Folder;
   onClick: (folder: Folder) => void;
+  onRename?: (folder: Folder) => void;
+  onDelete?: (folderId: string) => void;
   isMobile: boolean;
+  showActions?: boolean;
+  onActionsToggle?: () => void;
 }
 
 // BookmarkCard 组件属性
@@ -75,6 +80,24 @@ export interface BookmarkCardProps {
 export interface BookmarkFormProps {
   bookmark?: Bookmark | null;
   onSave: (formData: BookmarkFormData) => void;
+  onCancel: () => void;
+}
+
+// 文件夹表单数据类型
+export interface FolderFormData {
+  title: string;
+  parentId?: string | null;
+  path?: string[];
+}
+
+// FolderForm 组件属性
+export interface FolderFormProps {
+  folders: Folder[];
+  currentPath: string[];
+  currentFolderId: string | null;
+  mode?: 'create' | 'rename';
+  editFolder?: Folder | null;
+  onSave: (formData: FolderFormData) => void;
   onCancel: () => void;
 }
 
@@ -99,6 +122,8 @@ export interface UseBookmarksReturn {
   reorderBookmarks: (newOrder: Bookmark[]) => void;
   togglePinBookmark: (id: string) => void;
   addFolder: (folder: Omit<Folder, 'id'>) => Folder;
+  updateFolder: (id: string, updates: Partial<Folder>) => void;
+  deleteFolder: (id: string) => void;
   importBookmarks: (importedBookmarks: Bookmark[], importedFolders?: Folder[]) => void;
 }
 

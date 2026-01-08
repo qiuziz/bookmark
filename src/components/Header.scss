@@ -13,6 +13,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  flex: 1;
+  max-width: 70%;
+  overflow: hidden;
 }
 
 .header-right {
@@ -97,6 +100,17 @@
   font-size: 16px;
 }
 
+.header-btn.add-folder {
+  background: #f5f7fa;
+  color: #666;
+  font-size: 16px;
+}
+
+.header-btn.add-folder:hover {
+  background: #e8ebf0;
+  color: #333;
+}
+
 .current-path {
   display: flex;
   align-items: center;
@@ -109,6 +123,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+  min-width: 0;
 }
 
 .path-segment {
@@ -118,6 +134,21 @@
 
 .path-separator {
   color: #999;
+}
+
+@media (max-width: 950px) {
+  .header-left {
+    max-width: 60%;
+  }
+  
+  .header-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .btn-text {
+    font-size: 13px;
+  }
 }
 
 @media (max-width: 768px) {

@@ -13,6 +13,9 @@
   margin: 0 auto;
   padding: 24px;
   box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .cards-grid {
@@ -20,6 +23,21 @@
   grid-template-columns: repeat(var(--columns), 1fr);
   gap: 16px;
   width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .cards-grid {
+    gap: 12px;
+    padding: 0 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cards-grid {
+    gap: 8px;
+    padding: 0 8px;
+  }
 }
 
 .bookmark-grid {
