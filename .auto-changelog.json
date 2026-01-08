@@ -5,7 +5,6 @@
   "backfillLimit": false,
   "hideCredit": false,
   "pr": false,
-  "grep": "^(feat|fix|docs|style|refactor|perf|test|chore|revert)",
   "tagPrefix": "v",
   "packageFile": "package.json",
   "baseUrl": "https://github.com/qiuziz/bookmark"
