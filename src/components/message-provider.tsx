@@ -1,6 +1,6 @@
 import { createContext, useState, useContext, useRef, ReactElement, ReactNode } from 'react'
 import { Message, MessageProviderProps } from '../types'
-import './message.scss'
+import './Message.scss'
 
 interface MessageContextType {
   showMessage: (text: string, type?: 'success' | 'error' | 'info') => void;
