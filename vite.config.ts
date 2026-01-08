@@ -8,6 +8,9 @@ export default defineConfig({
     open: true
   },
   appType: 'spa',
+  build: {
+    outDir: 'dist/bookmark-tool'
+  },
   css: {
     preprocessorOptions: {
       scss: {
