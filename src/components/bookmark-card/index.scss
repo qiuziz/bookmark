@@ -42,6 +42,15 @@
   font-size: 24px;
   margin-bottom: 10px;
   flex-shrink: 0;
+  padding: 4px;
+
+  .favicon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background-color: white;
+    border-radius: 4px;
+  }
 }
 
 .bookmark-info {
@@ -236,6 +245,11 @@
     width: 40px;
     height: 40px;
     font-size: 20px;
+    padding: 3px;
+
+    .favicon-img {
+      border-radius: 3px;
+    }
   }
 
   .bookmark-title {
@@ -278,6 +292,11 @@
       height: 36px;
       font-size: 18px;
       border-radius: 8px;
+      padding: 3px;
+
+      .favicon-img {
+        border-radius: 2px;
+      }
     }
 
     .bookmark-title {
