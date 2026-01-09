@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:plugin": "VITE_PLUGIN=true vite build",
     "preview": "vite preview",
     "changelog": "auto-changelog --unreleased --commit-limit false && git add CHANGELOG.md"
   },
