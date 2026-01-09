@@ -2,13 +2,22 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>书签小工具</title>
+    <!-- plugin mode styles -->
+    <style>
+      /* 控制扩展弹窗的最小尺寸 - 仅在插件模式下生效 */
+      html, body {
+        min-width: 600px;
+        min-height: 400px;
+        overflow: auto;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="src/main.tsx"></script>
   </body>
 </html>
 

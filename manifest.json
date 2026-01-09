@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "书签小工具",
+  "description": "现代化的书签管理应用，支持层次化文件夹结构和导入/导出功能",
+  "version": "1.0.0",
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "书签小工具",
+    "default_icon": {
+      "16": "icon48.svg",
+      "32": "icon48.svg",
+      "48": "icon48.svg",
+      "128": "icon48.svg"
+    }
+  },
+  "icons": {
+    "16": "icon48.svg",
+    "32": "icon48.svg",
+    "48": "icon48.svg",
+    "128": "icon48.svg"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["*.html", "*.css", "*.js", "*.svg", "*.png"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

@@ -1,6 +1,9 @@
 import { useState, useCallback, useMemo, useEffect, ReactElement } from 'react';
 
-const BASENAME = '/bookmark';
+// 根据环境变量判断是否为插件模式
+const isPluginMode = import.meta.env.VITE_PLUGIN === 'true';
+// 浏览器插件环境下不使用完整路由
+const BASENAME = isPluginMode ? '' : '/bookmark';
 import Header from '../../components/header';
 import BookmarkCard from '../../components/bookmark-card';
 import FolderCard from '../../components/folder-card';
@@ -325,8 +328,13 @@ function Home(): ReactElement {
     setCurrentPath([]);
   }, []);
 
-  useEffect((): (() => void) | void => {
-    let pathString = window.location.pathname;
+  useEffect((): void => {
+    if (isPluginMode) {
+      // 浏览器插件环境下，不使用URL来管理路径状态
+      // 初始路径为空数组
+      setCurrentPath([]);
+    } else {
+      let pathString = window.location.pathname;
     if (pathString.startsWith(BASENAME)) {
       pathString = pathString.slice(BASENAME.length + 1);
     } else {
@@ -340,7 +348,9 @@ function Home(): ReactElement {
         console.error('Failed to parse path from URL');
       }
     }
-  }, []);
+    }
+	}, [isPluginMode]);
+	
 
   useEffect((): (() => void) | void => {
     const handlePopState = (): void => {
@@ -367,11 +377,13 @@ function Home(): ReactElement {
   }, []);
 
   useEffect((): void => {
-    const expectedPath = 
-      currentPath.length > 0 ? encodeURIComponent(JSON.stringify(currentPath)) : '';
-    const newPath = currentPath.length > 0 ? `${BASENAME}/${expectedPath}` : BASENAME;
-    window.history.pushState(null, '', newPath);
-  }, [currentPath]);
+    if (!isPluginMode) {
+      // 正常模式下，更新URL以反映当前路径
+      const path = currentPath.length > 0 ? `/${currentPath.join('/')}` : '';
+      window.history.replaceState({}, '', `${BASENAME}${path}`);
+    }
+    // 插件模式下不修改URL，保留当前路径状态在内存中
+  }, [currentPath, isPluginMode]);
 
   const handlePin = useCallback(
     (bookmark: Bookmark): void => {
