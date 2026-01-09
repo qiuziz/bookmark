@@ -70,7 +70,11 @@ function BookmarkCard({ bookmark, onEdit, onDelete, onPin, isMobile, showActions
     >
       {bookmark.isPinned && <div className="pinned-badge">置顶</div>}
       <div className="bookmark-icon" style={{ backgroundColor: bookmark.color }}>
-        {bookmark.icon}
+        {bookmark.icon.startsWith('data:image/') ? (
+          <img src={bookmark.icon} alt={bookmark.title} className="favicon-img" />
+        ) : (
+          bookmark.icon
+        )}
       </div>
       <div className="bookmark-info">
         <span className="bookmark-title">{bookmark.title}</span>

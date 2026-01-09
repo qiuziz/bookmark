@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试Favicon显示</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-img {
+            width: 64px;
+            height: 64px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: white;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #3367d6;
+        }
+    </style>
+</head>
+<body>
+    <h1>测试Favicon显示</h1>
+    
+    <div class="test-section">
+        <h2>1. 测试已知的Base64图片</h2>
+        <!-- 一个简单的红色圆形的base64图片 -->
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAMUExURczMzPf399fX1+bm5mzY9AMAAADiSURBVEjH7cGBQAgCESQAA0wAQmW4Q51UQwGQnNQaG5EJb6UQ4hYkOAY40K7QH3kQ30gAMALF0lT1XQcA8gQVn724Qe1X8FwQAB8wAA3l89cR0A5gAQQJn8H2QfAAAARwAAAv4H01TzLAAAAAAElFTkSuQmCC" alt="红色圆形" class="test-img">
+        <p>这是一个简单的红色圆形base64图片</p>
+        <p>Base64数据:</p>
+        <pre>data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAMUExURczMzPf399fX1+bm5mzY9AMAAADiSURBVEjH7cGBQAgCESQAA0wAQmW4Q51UQwGQnNQaG5EJb6UQ4hYkOAY40K7QH3kQ30gAMALF0lT1XQcA8gQVn724Qe1X8FwQAB8wAA3l89cR0A5gAQQJn8H2QfAAAARwAAAv4H01TzLAAAAAAElFTkSuQmCC</pre>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. 向Bookmark Tool添加测试书签</h2>
+        <button onclick="addTestBookmark()">添加测试书签</button>
+        <p id="test-result"></p>
+    </div>
+    
+    <script>
+        function addTestBookmark() {
+            // 创建一个测试书签，包含base64图片
+            const testBookmark = {
+                id: Date.now().toString(),
+                title: "测试书签 - 红色圆形",
+                url: "https://example.com",
+                icon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAMUExURczMzPf399fX1+bm5mzY9AMAAADiSURBVEjH7cGBQAgCESQAA0wAQmW4Q51UQwGQnNQaG5EJb6UQ4hYkOAY40K7QH3kQ30gAMALF0lT1XQcA8gQVn724Qe1X8FwQAB8wAA3l89cR0A5gAQQJn8H2QfAAAARwAAAv4H01TzLAAAAAAElFTkSuQmCC",
+                color: "#4285f4",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                isPinned: false
+            };
+            
+            // 获取现有的书签数据
+            const existingBookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+            
+            // 添加测试书签
+            existingBookmarks.push(testBookmark);
+            
+            // 保存回localStorage
+            localStorage.setItem('bookmarks', JSON.stringify(existingBookmarks));
+            
+            // 显示结果
+            document.getElementById('test-result').textContent = "测试书签已添加！请刷新Bookmark Tool页面查看结果。";
+        }
+    </script>
+</body>
+</html>
