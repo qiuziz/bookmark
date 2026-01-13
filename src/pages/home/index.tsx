@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo, useEffect, ReactElement } from 'react';
 const isPluginMode = import.meta.env.VITE_PLUGIN === 'true';
 // 浏览器插件环境下不使用完整路由
 const BASENAME = isPluginMode ? '' : '/bookmark';
+import logger from '../../utils/logger';
 import Header from '../../components/header';
 import BookmarkCard from '../../components/bookmark-card';
 import FolderCard from '../../components/folder-card';
@@ -79,15 +80,15 @@ function Home(): ReactElement {
       return f.parentId === currentFolderId;
     });
 
-    console.log('=== currentFolders 调试 ===');
-    console.log('当前路径:', currentPath);
-    console.log('当前文件夹ID:', currentFolderId);
-    console.log('总文件夹数:', folders.length);
-    console.log('过滤后数量:', result.length);
+    logger.log('=== currentFolders 调试 ===');
+    logger.log('当前路径:', currentPath);
+    logger.log('当前文件夹ID:', currentFolderId);
+    logger.log('总文件夹数:', folders.length);
+    logger.log('过滤后数量:', result.length);
     if (result.length > 0) {
-      console.log('过滤后的文件夹:');
+      logger.log('过滤后的文件夹:');
       result.slice(0, 5).forEach((f: Folder) => {
-        console.log(`  id: ${f.id}, title: ${f.title}, parentId: ${f.parentId}, path: ${f.path}`);
+        logger.log(`  id: ${f.id}, title: ${f.title}, parentId: ${f.parentId}, path: ${f.path}`);
       });
     }
 
@@ -104,11 +105,11 @@ function Home(): ReactElement {
       return b.path.every((p: string, i: number): boolean => p === currentPath[i]);
     });
 
-    console.log('=== currentBookmarks 调试 ===');
-    console.log('当前路径:', currentPath);
-    console.log('当前文件夹ID:', currentFolderId);
-    console.log('总书签数:', bookmarks.length);
-    console.log('过滤后数量:', result.length);
+    logger.log('=== currentBookmarks 调试 ===');
+    logger.log('当前路径:', currentPath);
+    logger.log('当前文件夹ID:', currentFolderId);
+    logger.log('总书签数:', bookmarks.length);
+    logger.log('过滤后数量:', result.length);
 
     return result;
   }, [currentPath, bookmarks, currentFolderId]);
@@ -124,19 +125,19 @@ function Home(): ReactElement {
   const displayItems: (Folder | Bookmark)[] = useMemo((): (Folder | Bookmark)[] => {
     const items = [...currentFolders, ...regularBookmarks];
 
-    console.log('=== 显示调试信息 ===');
-    console.log('当前路径:', currentPath);
-    console.log('当前文件夹ID:', currentFolderId);
-    console.log('当前文件夹数量:', currentFolders.length);
-    console.log('当前书签数量:', regularBookmarks.length);
-    console.log('显示项目数量:', items.length);
+    logger.log('=== 显示调试信息 ===');
+    logger.log('当前路径:', currentPath);
+    logger.log('当前文件夹ID:', currentFolderId);
+    logger.log('当前文件夹数量:', currentFolders.length);
+    logger.log('当前书签数量:', regularBookmarks.length);
+    logger.log('显示项目数量:', items.length);
 
     if (items.length > 0 && items.length <= 10) {
       items.forEach((item: Folder | Bookmark, i: number) => {
         if ('url' in item) {
-          console.log(`  [${i}] 书签: ${item.title} (parentId: ${item.parentId})`);
+          logger.log(`  [${i}] 书签: ${item.title} (parentId: ${item.parentId})`);
         } else {
-          console.log(
+          logger.log(
             `  [${i}] 文件夹: ${item.title} (id: ${item.id}, parentId: ${item.parentId})`
           );
         }
@@ -242,16 +243,16 @@ function Home(): ReactElement {
         const { folders: importedFolders, bookmarks: importedBookmarks } =
           parseEdgeBookmarks(htmlContent);
 
-        console.log('=== 导入调试信息 ===');
-        console.log('导入的书签数量:', importedBookmarks.length);
-        console.log('导入的文件夹数量:', importedFolders.length);
-        console.log('当前路径:', currentPath);
-        console.log('当前文件夹ID:', currentFolderId);
+        logger.log('=== 导入调试信息 ===');
+        logger.log('导入的书签数量:', importedBookmarks.length);
+        logger.log('导入的文件夹数量:', importedFolders.length);
+        logger.log('当前路径:', currentPath);
+        logger.log('当前文件夹ID:', currentFolderId);
 
         if (importedFolders.length > 0) {
-          console.log('文件夹详情:');
+          logger.log('文件夹详情:');
           importedFolders.forEach((f: Folder, i: number) => {
-            console.log(
+            logger.log(
               `  [${i}] ${f.title} (ID: ${f.id}, parentId: ${f.parentId}, path: ${f.path.join(
                 '/'
               )})`
@@ -260,9 +261,9 @@ function Home(): ReactElement {
         }
 
         if (importedBookmarks.length > 0) {
-          console.log('书签详情 (前5个):');
+          logger.log('书签详情 (前5个):');
           importedBookmarks.slice(0, 5).forEach((b: Bookmark, i: number) => {
-            console.log(
+            logger.log(
               `  [${i}] ${b.title} (ID: ${b.id}, parentId: ${b.parentId}, path: ${b.path.join(
                 '/'
               )})`
@@ -288,8 +289,8 @@ function Home(): ReactElement {
             !existingFolderKeys.has(JSON.stringify({ title: f.title, path: f.path }))
         );
 
-        console.log('过滤后的新书签数量:', newBookmarks.length);
-        console.log('过滤后的新文件夹数量:', newFolders.length);
+        logger.log('过滤后的新书签数量:', newBookmarks.length);
+        logger.log('过滤后的新文件夹数量:', newFolders.length);
 
         if (newBookmarks.length === 0 && newFolders.length === 0) {
           showMessage('没有新的书签需要导入', 'info');
@@ -304,7 +305,7 @@ function Home(): ReactElement {
         );
       } catch (err) {
         showMessage('导入失败，请确保选择正确的书签文件', 'error');
-        console.error('Import error:', err);
+        logger.error('Import error:', err);
       }
     },
     [bookmarks, folders, currentPath, currentFolderId, importBookmarks, showMessage]
@@ -345,7 +346,7 @@ function Home(): ReactElement {
         const path = JSON.parse(decodeURIComponent(pathString));
         setCurrentPath(path);
       } catch {
-        console.error('Failed to parse path from URL');
+        logger.error('Failed to parse path from URL');
       }
     }
     }
@@ -365,7 +366,7 @@ function Home(): ReactElement {
           const path = JSON.parse(decodeURIComponent(pathString));
           setCurrentPath(path);
         } catch {
-          console.error('Failed to parse path from URL');
+          logger.error('Failed to parse path from URL');
         }
       } else {
         setCurrentPath([]);

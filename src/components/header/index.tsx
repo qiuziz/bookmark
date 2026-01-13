@@ -1,7 +1,20 @@
+import React from 'react'
 import { HeaderProps } from '../../types'
+import { IS_PLUGIN } from '../../utils/env'
+import logger from '../../utils/logger'
 import './index.scss'
 
 function Header({ onAdd, onAddFolder, onImport, onExport, onBack, onHome, currentPath }: HeaderProps): React.ReactElement {
+  // 调试开关状态，仅在插件模式下使用
+  const [debugMode, setDebugMode] = React.useState(() => IS_PLUGIN ? logger.getDebug() : false);
+
+  // 切换调试模式
+  const toggleDebugMode = () => {
+    const newMode = !debugMode;
+    setDebugMode(newMode);
+    logger.setDebug(newMode);
+  };
+
   return (
     <header className="header">
       <div className="header-left">
@@ -46,6 +59,21 @@ function Header({ onAdd, onAddFolder, onImport, onExport, onBack, onHome, curren
           <span className="btn-icon">+</span>
           <span className="btn-text">添加</span>
         </button>
+        {/* 仅在插件模式下显示调试开关 */}
+        {IS_PLUGIN && (
+          <div className="debug-toggle">
+            <input 
+              type="checkbox" 
+              id="debug-switch" 
+              checked={debugMode} 
+              onChange={toggleDebugMode} 
+            />
+            <label htmlFor="debug-switch" title={debugMode ? "关闭调试" : "开启调试"}>
+              <span className="debug-icon">{debugMode ? "🔴" : "🐞"}</span>
+              <span className="debug-text">调试</span>
+            </label>
+          </div>
+        )}
       </div>
     </header>
   )

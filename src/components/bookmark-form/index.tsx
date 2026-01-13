@@ -2,6 +2,8 @@ import { useState, useEffect, ReactElement, FormEvent, ChangeEvent } from 'react
 import { BookmarkFormProps } from '../../types'
 import { getFaviconBase64 } from '../../utils/get-favicon'
 import { getPageTitle } from '../../utils/get-page-title'
+import { IS_PLUGIN } from '../../utils/env'
+import logger from '../../utils/logger'
 import './index.scss'
 
 function BookmarkForm({ bookmark, onSave, onCancel }: BookmarkFormProps): ReactElement {
@@ -25,7 +27,7 @@ function BookmarkForm({ bookmark, onSave, onCancel }: BookmarkFormProps): ReactE
   // 使用debounce优化URL输入时的favicon和标题获取
   useEffect(() => {
     const debounceTimer = setTimeout(async () => {
-      if (url) {
+      if (url && IS_PLUGIN) {
         try {
           new URL(url)
           setIsLoading(true)
@@ -37,22 +39,22 @@ function BookmarkForm({ bookmark, onSave, onCancel }: BookmarkFormProps): ReactE
           ])
           
           // 设置favicon
-          console.log('获取到的favicon结果:', favicon)
+          logger.log('获取到的favicon结果:', favicon)
           if (favicon) {
-            console.log('设置favicon:', favicon.substring(0, 100) + '...')
+            logger.log('设置favicon:', favicon.substring(0, 100) + '...')
             setIcon(favicon)
           } else {
-            console.log('未获取到favicon，使用默认图标')
+            logger.log('未获取到favicon，使用默认图标')
             setIcon('📎')
           }
           
           // 设置页面标题（只有当用户还没有输入自定义标题时）
           if (pageTitle && !title) {
-            console.log('自动设置页面标题:', pageTitle)
+            logger.log('自动设置页面标题:', pageTitle)
             setTitle(pageTitle)
           }
         } catch (error) {
-          console.error('URL格式错误或获取信息失败:', error)
+          logger.error('URL格式错误或获取信息失败:', error)
           setIcon('📎')
         } finally {
           setIsLoading(false)

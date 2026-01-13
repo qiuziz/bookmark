@@ -1,4 +1,6 @@
 // 获取网站favicon并转换为base64
+import logger from './logger'
+
 export async function getFaviconBase64(url: string): Promise<string | null> {
   try {
     // 解析URL以获取主机名
@@ -31,12 +33,12 @@ export async function getFaviconBase64(url: string): Promise<string | null> {
             const arrayBuffer = await response.arrayBuffer()
             const base64 = await arrayBufferToBase64(arrayBuffer)
             const base64Url = `data:${contentType};base64,${base64}`
-            console.log('成功获取favicon (直接路径):', base64Url.substring(0, 100) + '...')
+            logger.log('成功获取favicon (直接路径):', base64Url.substring(0, 100) + '...')
             return base64Url
           }
         }
       } catch (pathError) {
-        console.log('尝试路径失败:', faviconUrl, pathError)
+          logger.log('尝试路径失败:', faviconUrl, pathError)
       }
     }
     
@@ -65,20 +67,20 @@ export async function getFaviconBase64(url: string): Promise<string | null> {
               const arrayBuffer = await faviconResponse.arrayBuffer()
               const base64 = await arrayBufferToBase64(arrayBuffer)
               const base64Url = `data:${contentType};base64,${base64}`
-              console.log('成功获取favicon (HTML解析):', base64Url.substring(0, 100) + '...')
+              logger.log('成功获取favicon (HTML解析):', base64Url.substring(0, 100) + '...')
               return base64Url
             }
           }
         }
       }
     } catch (htmlError) {
-      console.error('解析HTML失败:', htmlError)
+      logger.error('解析HTML失败:', htmlError)
     }
     
-    console.log('所有favicon获取方法都失败了')
+    logger.log('所有favicon获取方法都失败了')
     return null
   } catch (error) {
-    console.error('获取favicon失败:', error)
+    logger.error('获取favicon失败:', error)
     return null
   }
 }

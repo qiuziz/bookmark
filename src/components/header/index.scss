@@ -216,3 +216,76 @@
     font-size: 12px;
   }
 }
+
+/* 调试开关样式 */
+.debug-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: #f5f7fa;
+  transition: all 0.2s;
+  height: 36px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.debug-toggle:hover {
+  background: #e8ebf0;
+}
+
+.debug-toggle input[type="checkbox"] {
+  display: none;
+}
+
+.debug-toggle label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.2s;
+}
+
+.debug-toggle input[type="checkbox"]:checked + label {
+  color: #4285f4;
+}
+
+.debug-icon {
+  font-size: 16px;
+}
+
+.debug-text {
+  font-size: 14px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .debug-toggle {
+    padding: 8px 12px;
+    height: 32px;
+  }
+}
+
+@media (max-width: 576px) {
+  .debug-toggle {
+    padding: 8px;
+    width: 32px;
+    height: 32px;
+  }
+  
+  .debug-text {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .debug-toggle {
+    padding: 6px;
+    width: 28px;
+    height: 28px;
+  }
+}
