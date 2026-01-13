@@ -239,3 +239,109 @@ form {
   align-items: center;
   justify-content: center;
 }
+
+/* 图标选择区域 */
+.icon-selection {
+  margin-top: 16px;
+}
+
+/* 图标选择容器 */
+.icon-selection-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+  gap: 12px;
+  padding: 12px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* 当前选择的图标按钮 */
+.selected-icon-btn {
+  width: 100%;
+  height: 64px;
+  border: 3px solid #4285f4;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.selected-icon-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.2);
+}
+
+/* 图标选项按钮 */
+.icon-option-btn {
+  width: 48px;
+  height: 48px;
+  border: 2px solid #eee;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-option-btn:hover {
+  border-color: #4285f4;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.icon-option-btn.active {
+  border-color: #4285f4;
+  background: #e3f2fd;
+  box-shadow: 0 2px 8px rgba(66, 133, 244, 0.2);
+}
+
+/* 自定义图标URL输入框 */
+.custom-icon-url input {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: #4285f4;
+  }
+
+  &::placeholder {
+    color: #999;
+  }
+}
+
+/* 加载中遮罩层 */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #4285f4;
+  z-index: 1;
+}
+
+/* 确保选中图标按钮是相对定位的，以便加载遮罩层可以绝对定位 */
+.selected-icon-btn {
+  position: relative;
+}

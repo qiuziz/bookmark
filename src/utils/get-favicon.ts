@@ -28,14 +28,27 @@ export async function getFaviconBase64(url: string): Promise<string | null> {
         })
         
         if (response.ok) {
+          // 严格检查响应头的content-type是否为图像类型
           const contentType = response.headers.get('content-type')
+          logger.log(`直接路径 ${path} 的favicon响应类型:`, contentType)
+          
           if (contentType && contentType.startsWith('image/')) {
             const arrayBuffer = await response.arrayBuffer()
             const base64 = await arrayBufferToBase64(arrayBuffer)
-            const base64Url = `data:${contentType};base64,${base64}`
-            logger.log('成功获取favicon (直接路径):', base64Url.substring(0, 100) + '...')
-            return base64Url
+            
+            // 检查base64是否为空
+            if (base64) {
+              const base64Url = `data:${contentType};base64,${base64}`
+              logger.log('成功获取favicon (直接路径):', base64Url.substring(0, 100) + '...')
+              return base64Url
+            } else {
+              logger.log(`直接路径 ${path} 的favicon转换为base64失败，结果为空`)
+            }
+          } else {
+            logger.log(`直接路径 ${path} 的favicon不是有效的图像类型:`, contentType)
           }
+        } else {
+          logger.log(`直接路径 ${path} 的favicon请求失败:`, response.status)
         }
       } catch (pathError) {
           logger.log('尝试路径失败:', faviconUrl, pathError)
@@ -55,21 +68,40 @@ export async function getFaviconBase64(url: string): Promise<string | null> {
         const faviconUrlFromHtml = extractFaviconUrlFromHtml(html, baseUrl)
         
         if (faviconUrlFromHtml) {
-          const faviconResponse = await fetch(faviconUrlFromHtml, {
-            method: 'GET',
-            mode: 'cors',
-            cache: 'no-cache'
-          })
-          
-          if (faviconResponse.ok) {
-            const contentType = faviconResponse.headers.get('content-type')
-            if (contentType && contentType.startsWith('image/')) {
-              const arrayBuffer = await faviconResponse.arrayBuffer()
-              const base64 = await arrayBufferToBase64(arrayBuffer)
-              const base64Url = `data:${contentType};base64,${base64}`
-              logger.log('成功获取favicon (HTML解析):', base64Url.substring(0, 100) + '...')
-              return base64Url
+          try {
+            const faviconResponse = await fetch(faviconUrlFromHtml, {
+              method: 'GET',
+              mode: 'cors',
+              cache: 'no-cache',
+              // 设置超时，避免请求阻塞
+              signal: AbortSignal.timeout(5000)
+            })
+            
+            if (faviconResponse.ok) {
+              // 严格检查响应头的content-type是否为图像类型
+              const contentType = faviconResponse.headers.get('content-type')
+              logger.log('从HTML提取的favicon响应类型:', contentType)
+              
+              if (contentType && contentType.startsWith('image/')) {
+                const arrayBuffer = await faviconResponse.arrayBuffer()
+                const base64 = await arrayBufferToBase64(arrayBuffer)
+                
+                // 检查base64是否为空
+                if (base64) {
+                  const base64Url = `data:${contentType};base64,${base64}`
+                  logger.log('成功获取favicon (HTML解析):', base64Url.substring(0, 100) + '...')
+                  return base64Url
+                } else {
+                  logger.log('从HTML提取的favicon转换为base64失败，结果为空')
+                }
+              } else {
+                logger.log('从HTML提取的favicon不是有效的图像类型:', contentType)
+              }
+            } else {
+              logger.log('从HTML提取的favicon请求失败:', faviconResponse.status)
             }
+          } catch (faviconFetchError) {
+            logger.error('获取从HTML提取的favicon失败:', faviconFetchError)
           }
         }
       }
@@ -140,15 +172,36 @@ function extractFaviconUrlFromHtml(html: string, baseUrl: string): string | null
 }
 
 // 将ArrayBuffer转换为base64
-function arrayBufferToBase64(buffer: ArrayBuffer): Promise<string> {
+function arrayBufferToBase64(buffer: ArrayBuffer): Promise<string | null> {
   return new Promise((resolve) => {
+    // 检查buffer是否为空
+    if (buffer.byteLength === 0) {
+      logger.log('ArrayBuffer为空，无法转换为base64')
+      resolve(null)
+      return
+    }
+    
     const blob = new Blob([buffer], { type: 'image/x-icon' })
     const reader = new FileReader()
     
     reader.onloadend = () => {
-      const base64data = reader.result as string
-      // 移除data URL的头部，只保留base64部分
-      resolve(base64data.split(',')[1])
+      try {
+        const base64data = reader.result as string
+        // 移除data URL的头部，只保留base64部分
+        const base64 = base64data.split(',')[1]
+        
+        // 检查base64是否为空
+        if (!base64) {
+          logger.log('base64转换失败，结果为空')
+          resolve(null)
+          return
+        }
+        
+        resolve(base64)
+      } catch (error) {
+        logger.error('base64转换过程中发生错误:', error)
+        resolve(null)
+      }
     }
     
     reader.readAsDataURL(blob)
