@@ -4,7 +4,7 @@ import { IS_PLUGIN } from '../../utils/env'
 import logger from '../../utils/logger'
 import './index.scss'
 
-function Header({ onAdd, onAddFolder, onImport, onExport, onBack, onHome, currentPath }: HeaderProps): React.ReactElement {
+function Header({ onAdd, onAddFolder, onImport, onExport, onWallpaperClick, onBack, onHome, currentPath }: HeaderProps): ReactElement {
   // 调试开关状态，仅在插件模式下使用
   const [debugMode, setDebugMode] = React.useState(() => IS_PLUGIN ? logger.getDebug() : false);
 
@@ -43,6 +43,10 @@ function Header({ onAdd, onAddFolder, onImport, onExport, onBack, onHome, curren
         )}
       </div>
       <div className="header-right">
+        <button className="header-btn wallpaper" onClick={onWallpaperClick} title="设置壁纸">
+          <span className="btn-icon">🎨</span>
+          <span className="btn-text">壁纸</span>
+        </button>
         <button className="header-btn add-folder" onClick={onAddFolder} title="新建文件夹">
           <span className="btn-icon">📁+</span>
           <span className="btn-text">新建文件夹</span>
@@ -64,14 +68,11 @@ function Header({ onAdd, onAddFolder, onImport, onExport, onBack, onHome, curren
           <div className="debug-toggle">
             <input 
               type="checkbox" 
-              id="debug-switch" 
-              checked={debugMode} 
-              onChange={toggleDebugMode} 
+              id="debug-toggle" 
+              checked={window.debugMode} 
+              onChange={() => window.toggleDebugMode()}
             />
-            <label htmlFor="debug-switch" title={debugMode ? "关闭调试" : "开启调试"}>
-              <span className="debug-icon">{debugMode ? "🔴" : "🐞"}</span>
-              <span className="debug-text">调试</span>
-            </label>
+            <label htmlFor="debug-toggle">调试</label>
           </div>
         )}
       </div>

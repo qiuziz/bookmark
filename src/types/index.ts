@@ -49,12 +49,21 @@ export interface ImportedData {
   bookmarks: Bookmark[];
 }
 
+// 壁纸类型
+export interface Wallpaper {
+  id: string;
+  name: string;
+  path: string;
+  thumbnail?: string;
+}
+
 // Header 组件属性
 export interface HeaderProps {
   onAdd: () => void;
   onAddFolder: () => void;
   onImport: () => void;
   onExport: () => void;
+  onWallpaperClick?: () => void;
   onBack?: () => void;
   onHome?: () => void;
   currentPath: string[];

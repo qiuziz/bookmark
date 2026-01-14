@@ -16,14 +16,20 @@
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  // 移除背景的磨砂效果，仅保留卡片和header的高斯模糊
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(var(--columns), 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  gap: 12px;
   width: 100%;
   box-sizing: border-box;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 @media (max-width: 768px) {

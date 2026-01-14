@@ -11,6 +11,7 @@ import FolderCard from '../../components/folder-card';
 import BookmarkForm from '../../components/bookmark-form';
 import FolderForm from '../../components/folder-form';
 import ImportModal from '../../components/import-modal';
+import WallpaperSelector from '../../components/wallpaper-selector';
 import { useBookmarks } from '../../hooks/use-bookmarks';
 import { useResponsive } from '../../hooks/use-responsive';
 import { useMessage } from '../../components/message';
@@ -39,6 +40,7 @@ function Home(): ReactElement {
   const [showForm, setShowForm] = useState<boolean>(false);
   const [showFolderForm, setShowFolderForm] = useState<boolean>(false);
   const [showImportModal, setShowImportModal] = useState<boolean>(false);
+  const [showWallpaperSelector, setShowWallpaperSelector] = useState<boolean>(false);
   const [currentPath, setCurrentPath] = useState<string[]>([]);
   const [activeCardId, setActiveCardId] = useState<{id: string, type: 'pinned' | 'regular' | 'folder'} | null>(null);
 
@@ -315,7 +317,13 @@ function Home(): ReactElement {
     setShowImportModal(false);
   }, []);
 
+  const handleOpenWallpaperSelector = useCallback((): void => {
+    setShowWallpaperSelector(true);
+  }, []);
 
+  const handleCloseWallpaperSelector = useCallback((): void => {
+    setShowWallpaperSelector(false);
+  }, []);
 
   const handleFolderClick = useCallback((folder: Folder): void => {
     setCurrentPath((prev: string[]): string[] => [...prev, folder.title]);
@@ -415,6 +423,7 @@ function Home(): ReactElement {
         onAddFolder={handleAddFolder}
         onImport={handleOpenImport}
         onExport={handleExport}
+        onWallpaperClick={handleOpenWallpaperSelector}
         onBack={currentPath.length > 0 ? handleBack : undefined}
         onHome={currentPath.length > 0 ? handleHome : undefined}
         currentPath={currentPath}
@@ -512,6 +521,10 @@ function Home(): ReactElement {
           onSave={handleSaveFolder}
           onCancel={handleCancelFolder}
         />
+      )}
+
+      {showWallpaperSelector && (
+        <WallpaperSelector onClose={handleCloseWallpaperSelector} />
       )}
     </div>
   );
