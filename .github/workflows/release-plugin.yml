@@ -47,4 +47,5 @@ jobs:
           draft: false
           prerelease: false
           generateReleaseNotes: true
+          bodyFile: "CHANGELOG.md"
           token: ${{ secrets.GITHUB_TOKEN }}
