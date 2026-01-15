@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useRef, ReactElement, ReactNode } from 'react'
+import { createContext, useState, useContext, useRef, ReactElement, ReactNode, useEffect } from 'react'
 import { Message, MessageProviderProps } from '../../types'
 import './index.scss'
 
@@ -12,7 +12,7 @@ const MessageContext = createContext<MessageContextType | undefined>(undefined)
 
 function MessageProvider({ children }: MessageProviderProps): ReactElement {
   const [messages, setMessages] = useState<Message[]>([])
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
 
   const showMessage = (text: string, type: 'success' | 'error' | 'info' = 'info', actions?: MessageAction[]): void => {
     const newMessage: Message = {
@@ -24,16 +24,34 @@ function MessageProvider({ children }: MessageProviderProps): ReactElement {
 
     setMessages((prev: Message[]): Message[] => [...prev, newMessage])
 
-    if (timerRef.current) {
-      clearTimeout(timerRef.current)
-    }
-
     // 如果有action按钮，延长消息显示时间
     const duration = actions?.length ? 5000 : (type === 'error' ? 3000 : 2000);
-    timerRef.current = window.setTimeout((): void => {
+    const timer = window.setTimeout((): void => {
       setMessages((prev: Message[]): Message[] => prev.filter((msg: Message): boolean => msg.id !== newMessage.id))
+      timersRef.current.delete(newMessage.id)
     }, duration)
+
+    timersRef.current.set(newMessage.id, timer)
   }
+
+  // 清理定时器
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach(timer => clearTimeout(timer))
+      timersRef.current.clear()
+    }
+  }, [])
+
+  // 当消息列表变化时，清理不再存在的消息的定时器
+  useEffect(() => {
+    const currentMessageIds = new Set(messages.map(msg => msg.id))
+    timersRef.current.forEach((timer, id) => {
+      if (!currentMessageIds.has(id)) {
+        clearTimeout(timer)
+        timersRef.current.delete(id)
+      }
+    })
+  }, [messages])
 
   return (
     <MessageContext.Provider value={{ showMessage }}>

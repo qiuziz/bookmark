@@ -46,12 +46,14 @@ function parseEdgeBookmarks(htmlContent: string): ParsedData {
           
           if (href) {
             const isPinned = a.getAttribute('CUSTOM_PINNED') === 'true'
+            const iconAttr = a.getAttribute('ICON')
+            let icon = iconAttr || getIconForUrl(href)
             
             bookmarks.push({
               id: `bookmark_${bookmarks.length}_${now}`,
               title: title.trim(),
               url: href,
-              icon: getIconForUrl(href),
+              icon,
               color: getColorForUrl(href),
               parentId: parentFolderId,
               path: [...parentPath],
@@ -71,7 +73,7 @@ function parseEdgeBookmarks(htmlContent: string): ParsedData {
   return { folders, bookmarks }
 }
 
-function exportBookmarks(folders: Folder[], bookmarks: Bookmark[]): string {
+async function exportBookmarks(folders: Folder[], bookmarks: Bookmark[]): Promise<string> {
   let html = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
 <!-- This is an automatically generated file.  It will be read and overwritten.
   DO NOT EDIT! -->
@@ -81,7 +83,7 @@ function exportBookmarks(folders: Folder[], bookmarks: Bookmark[]): string {
 <DL><p>`
 
   // 按parentId组织文件夹和书签
-  function buildHtml(parentId: string | null, level: number = 0): string {
+  async function buildHtml(parentId: string | null, level: number = 0): Promise<string> {
     let result = ''
     const indent = '  '.repeat(level + 1)
     
@@ -90,7 +92,7 @@ function exportBookmarks(folders: Folder[], bookmarks: Bookmark[]): string {
     for (const folder of childFolders) {
       result += `${indent}<DT><H3 ADD_DATE="${Math.floor(Date.now() / 1000)}">${escapeHtml(folder.title)}</H3>\n`
       result += `${indent}<DL><p>\n`
-      result += buildHtml(folder.id, level + 1)
+      result += await buildHtml(folder.id, level + 1)
       result += `${indent}</DL><p>\n`
     }
     
@@ -98,13 +100,31 @@ function exportBookmarks(folders: Folder[], bookmarks: Bookmark[]): string {
     const childBookmarks = bookmarks.filter(bookmark => bookmark.parentId === parentId)
     for (const bookmark of childBookmarks) {
       const pinnedAttr = bookmark.isPinned ? ' CUSTOM_PINNED="true"' : ''
-      result += `${indent}<DT><A HREF="${escapeHtml(bookmark.url)}" ADD_DATE="${Math.floor(Date.now() / 1000)}"${pinnedAttr}>${escapeHtml(bookmark.title)}</A>\n`
+      let iconAttr = ''
+      
+      if (bookmark.icon) {
+        if (bookmark.icon.startsWith('data:')) {
+          // 如果已经是base64，直接使用
+          iconAttr = ` ICON="${escapeHtml(bookmark.icon)}"`
+        } else if (/^[\p{Emoji}\p{Emoji_Modifier}\p{Emoji_Component}\p{Emoji_Modifier_Base}\p{Emoji_Presentation}]+$/u.test(bookmark.icon)) {
+          // 如果是emoji，转换为base64
+          const base64Icon = emojiToBase64(bookmark.icon)
+          if (base64Icon) {
+            iconAttr = ` ICON="${escapeHtml(base64Icon)}"`
+          }
+        } else {
+          // 其他类型的图标，直接使用
+          iconAttr = ` ICON="${escapeHtml(bookmark.icon)}"`
+        }
+      }
+      
+      result += `${indent}<DT><A HREF="${escapeHtml(bookmark.url)}" ADD_DATE="${Math.floor(Date.now() / 1000)}"${pinnedAttr}${iconAttr}>${escapeHtml(bookmark.title)}</A>\n`
     }
     
     return result
   }
 
-  html += buildHtml(null)
+  html += await buildHtml(null)
   html += `</DL><p>`
   
   return html
@@ -147,7 +167,32 @@ function escapeHtml(text: string): string {
     '"': '&quot;',
     "'": '&#039;'
   }
-  return String(text).replace(/[&<>"']/g, (m: string): string => map[m])
+  return String(text).replace(/[&<>'"]/g, (m: string): string => map[m])
+}
+
+// 将emoji转换为base64图像
+function emojiToBase64(emoji: string): string {
+  // 创建一个canvas元素
+  const canvas = document.createElement('canvas');
+  canvas.width = 16;
+  canvas.height = 16;
+  
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return '';
+  
+  // 设置背景为白色
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // 设置字体和绘制emoji
+  ctx.font = '12px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#000000';
+  ctx.fillText(emoji, canvas.width / 2, canvas.height / 2);
+  
+  // 转换为base64
+  return canvas.toDataURL('image/png');
 }
 
 export { parseEdgeBookmarks, exportBookmarks }

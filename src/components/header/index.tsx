@@ -1,10 +1,10 @@
-import React from 'react'
+import React, { ReactElement } from 'react'
 import { HeaderProps } from '../../types'
 import { IS_PLUGIN } from '../../utils/env'
 import logger from '../../utils/logger'
 import './index.scss'
 
-function Header({ onAdd, onAddFolder, onImport, onExport, onWallpaperClick, onBack, onHome, currentPath }: HeaderProps): ReactElement {
+function Header({ onAdd, onAddFolder, onImport, onExport, onWallpaperClick, onBack, onHome, currentPath, onAuthorizeFileStorage, onManualBackup, onFileImport, isFileStorageSupported, isFileStorageAuthorized }: HeaderProps): ReactElement {
   // 调试开关状态，仅在插件模式下使用
   const [debugMode, setDebugMode] = React.useState(() => IS_PLUGIN ? logger.getDebug() : false);
 
@@ -59,6 +59,30 @@ function Header({ onAdd, onAddFolder, onImport, onExport, onWallpaperClick, onBa
           <span className="btn-icon">📥</span>
           <span className="btn-text">导入</span>
         </button>
+        
+        {/* 文件存储相关按钮 */}
+        {isFileStorageSupported && (
+          <>
+            {!isFileStorageAuthorized ? (
+              <button className="header-btn authorize-storage" onClick={onAuthorizeFileStorage} title="授权文件存储">
+                <span className="btn-icon">💾</span>
+                <span className="btn-text">授权存储</span>
+              </button>
+            ) : (
+              <>
+                <button className="header-btn backup" onClick={onManualBackup} title="手动备份">
+                  <span className="btn-icon">🔄</span>
+                  <span className="btn-text">备份</span>
+                </button>
+                <button className="header-btn file-import" onClick={onFileImport} title="从文件导入">
+                  <span className="btn-icon">📂</span>
+                  <span className="btn-text">文件导入</span>
+                </button>
+              </>
+            )}
+          </>
+        )}
+        
         <button className="header-btn add" onClick={onAdd} title="添加书签">
           <span className="btn-icon">+</span>
           <span className="btn-text">添加</span>
@@ -69,8 +93,8 @@ function Header({ onAdd, onAddFolder, onImport, onExport, onWallpaperClick, onBa
             <input 
               type="checkbox" 
               id="debug-toggle" 
-              checked={window.debugMode} 
-              onChange={() => window.toggleDebugMode()}
+              checked={debugMode} 
+              onChange={toggleDebugMode}
             />
             <label htmlFor="debug-toggle">调试</label>
           </div>

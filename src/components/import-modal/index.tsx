@@ -33,8 +33,11 @@ function ImportModal({ onImport, onCancel }: ImportModalProps): ReactElement {
   }
 
   const handleFile = (file: File): void => {
-    if (file.type !== 'text/html' && !file.name.endsWith('.html')) {
-      alert('请选择HTML格式的书签文件')
+    const isHtml = file.type === 'text/html' || file.name.endsWith('.html')
+    const isJson = file.type === 'application/json' || file.name.endsWith('.json')
+    
+    if (!isHtml && !isJson) {
+      alert('请选择HTML或JSON格式的书签文件')
       return
     }
 
@@ -67,15 +70,15 @@ function ImportModal({ onImport, onCancel }: ImportModalProps): ReactElement {
             <input
               ref={fileInputRef}
               type="file"
-              accept=".html"
+              accept=".html,.json"
               onChange={handleFileChange}
               className="file-input"
               multiple={false}
             />
             <div className="file-drop-content">
               <div className="file-drop-icon">📁</div>
-              <p>拖拽HTML文件到此处，或点击选择文件</p>
-              <p className="file-drop-hint">支持从Edge/Chrome浏览器导出的书签HTML文件</p>
+              <p>拖拽HTML或JSON文件到此处，或点击选择文件</p>
+              <p className="file-drop-hint">支持从Edge/Chrome浏览器导出的HTML书签文件或本工具导出的JSON文件</p>
             </div>
           </div>
           <div className="import-actions">

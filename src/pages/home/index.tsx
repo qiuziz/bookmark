@@ -30,7 +30,12 @@ function Home(): ReactElement {
     importBookmarks,
     addFolder,
     updateFolder,
-    deleteFolder
+    deleteFolder,
+    isFileStorageSupported,
+    isFileStorageAuthorized,
+    requestFileStorageAuthorization,
+    backupData,
+    importFromFile
   } = useBookmarks();
   const { isMobile, columns } = useResponsive();
   const { showMessage } = useMessage();
@@ -44,18 +49,23 @@ function Home(): ReactElement {
   const [currentPath, setCurrentPath] = useState<string[]>([]);
   const [activeCardId, setActiveCardId] = useState<{id: string, type: 'pinned' | 'regular' | 'folder'} | null>(null);
 
-  const handleExport = useCallback((): void => {
-    const htmlContent = exportBookmarks(folders, bookmarks);
-    const blob = new Blob([htmlContent], { type: 'text/html;charset=UTF-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `bookmarks_${new Date().toISOString().split('T')[0]}.html`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    showMessage(`成功导出 ${folders.length} 个文件夹和 ${bookmarks.length} 个书签`, 'success');
+  const handleExport = useCallback(async (): Promise<void> => {
+    try {
+      const htmlContent = await exportBookmarks(folders, bookmarks);
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=UTF-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `bookmarks_${new Date().toISOString().split('T')[0]}.html`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      showMessage(`成功导出 ${folders.length} 个文件夹和 ${bookmarks.length} 个书签`, 'success');
+    } catch (error) {
+      logger.error('导出书签失败:', error);
+      showMessage('导出书签失败，请重试', 'error');
+    }
   }, [folders, bookmarks, showMessage]);
 
   const showExportConfirm = useCallback((): void => {
@@ -240,10 +250,55 @@ function Home(): ReactElement {
   }, []);
 
   const handleImport = useCallback(
-    (htmlContent: string, _fileName: string): void => {
+    (fileContent: string, fileName: string): void => {
       try {
-        const { folders: importedFolders, bookmarks: importedBookmarks } =
-          parseEdgeBookmarks(htmlContent);
+        let importedFolders: Folder[] = [];
+        let importedBookmarks: Bookmark[] = [];
+
+        // 根据文件名判断文件类型
+        if (fileName.endsWith('.json')) {
+          // 处理JSON文件
+          const jsonData = JSON.parse(fileContent);
+          
+          // 确保bookmarks是数组
+          if (Array.isArray(jsonData.bookmarks)) {
+            importedBookmarks = jsonData.bookmarks;
+          }
+          
+          // 确保folders是数组
+          if (Array.isArray(jsonData.folders)) {
+            importedFolders = jsonData.folders;
+          }
+        } else {
+          // 处理HTML文件
+          const { folders, bookmarks } = parseEdgeBookmarks(fileContent);
+          importedFolders = folders;
+          importedBookmarks = bookmarks;
+        }
+        
+        // 确保导入的数据是有效的
+        importedBookmarks = importedBookmarks.map((bookmark: any) => ({
+          ...bookmark,
+          // 确保必要字段存在
+          id: bookmark.id || `bookmark_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          title: bookmark.title || '未命名书签',
+          url: bookmark.url || '',
+          icon: bookmark.icon || '🔖',
+          color: bookmark.color || '#666666',
+          parentId: bookmark.parentId || null,
+          path: bookmark.path || [],
+          isPinned: bookmark.isPinned || false,
+          createdAt: bookmark.createdAt || Date.now()
+        }));
+        
+        importedFolders = importedFolders.map((folder: any) => ({
+          ...folder,
+          // 确保必要字段存在
+          id: folder.id || `folder_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          title: folder.title || '未命名文件夹',
+          parentId: folder.parentId || null,
+          path: folder.path || []
+        }));
 
         logger.log('=== 导入调试信息 ===');
         logger.log('导入的书签数量:', importedBookmarks.length);
@@ -324,6 +379,52 @@ function Home(): ReactElement {
   const handleCloseWallpaperSelector = useCallback((): void => {
     setShowWallpaperSelector(false);
   }, []);
+
+  // 处理文件存储授权
+  const handleRequestFileStorage = useCallback(async (): Promise<void> => {
+    try {
+      const success = await requestFileStorageAuthorization();
+      if (success) {
+        showMessage('文件存储授权成功，数据将自动备份', 'success');
+      } else {
+        showMessage('文件存储授权失败', 'error');
+      }
+    } catch (error) {
+      logger.error('文件存储授权错误:', error);
+      showMessage('文件存储授权过程中发生错误', 'error');
+    }
+  }, [requestFileStorageAuthorization, showMessage]);
+
+  // 处理手动备份
+  const handleManualBackup = useCallback(async (): Promise<void> => {
+    try {
+      if (!isFileStorageAuthorized) {
+        showMessage('请先授权文件存储访问权限', 'info');
+        return;
+      }
+      
+      const success = await backupData();
+      if (success) {
+        showMessage('数据备份成功', 'success');
+      } else {
+        showMessage('数据备份失败', 'error');
+      }
+    } catch (error) {
+      logger.error('手动备份错误:', error);
+      showMessage('手动备份过程中发生错误', 'error');
+    }
+  }, [isFileStorageAuthorized, backupData, showMessage]);
+
+  // 处理从文件导入
+  const handleFileImport = useCallback(async (): Promise<void> => {
+    try {
+      await importFromFile();
+      showMessage('从文件导入数据成功', 'success');
+    } catch (error) {
+      logger.error('文件导入错误:', error);
+      showMessage('从文件导入数据失败', 'error');
+    }
+  }, [importFromFile, showMessage]);
 
   const handleFolderClick = useCallback((folder: Folder): void => {
     setCurrentPath((prev: string[]): string[] => [...prev, folder.title]);
@@ -427,6 +528,11 @@ function Home(): ReactElement {
         onBack={currentPath.length > 0 ? handleBack : undefined}
         onHome={currentPath.length > 0 ? handleHome : undefined}
         currentPath={currentPath}
+        onAuthorizeFileStorage={handleRequestFileStorage}
+        onManualBackup={handleManualBackup}
+        onFileImport={handleFileImport}
+        isFileStorageSupported={isFileStorageSupported}
+        isFileStorageAuthorized={isFileStorageAuthorized}
       />
 
       <main className="main-content">

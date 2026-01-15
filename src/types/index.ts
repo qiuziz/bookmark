@@ -67,6 +67,11 @@ export interface HeaderProps {
   onBack?: () => void;
   onHome?: () => void;
   currentPath: string[];
+  onAuthorizeFileStorage?: () => void;
+  onManualBackup?: () => void;
+  onFileImport?: () => void;
+  isFileStorageSupported?: boolean;
+  isFileStorageAuthorized?: boolean;
 }
 
 // FolderCard 组件属性
@@ -140,6 +145,11 @@ export interface UseBookmarksReturn {
   updateFolder: (id: string, updates: Partial<Folder>) => void;
   deleteFolder: (id: string) => void;
   importBookmarks: (importedBookmarks: Bookmark[], importedFolders?: Folder[]) => void;
+  isFileStorageSupported: boolean;
+  isFileStorageAuthorized: boolean;
+  requestFileStorageAuthorization: () => Promise<boolean>;
+  backupData: () => Promise<boolean>;
+  importFromFile: () => Promise<void>;
 }
 
 // useResponsive hook 返回类型
