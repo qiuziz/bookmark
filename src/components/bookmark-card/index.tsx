@@ -34,7 +34,7 @@ function BookmarkCard({ bookmark, onEdit, onDelete, onPin, isMobile, showActions
       onActionsToggle()
       return
     }
-    window.open(bookmark.url, '_blank')
+    window.location.href = bookmark.url
   }
 
   const handleEdit = (e: React.MouseEvent): void => {
