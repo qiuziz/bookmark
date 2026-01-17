@@ -34,7 +34,33 @@ function BookmarkCard({ bookmark, onEdit, onDelete, onPin, isMobile, showActions
       onActionsToggle()
       return
     }
-    window.location.href = bookmark.url
+    
+    // 检查是否为插件环境
+    const isPluginMode = import.meta.env.VITE_PLUGIN === 'true';
+    
+    if (isPluginMode) {
+      // 在插件环境下
+      const chromeWindow = window as any;
+      
+      // 检查是否是弹出窗口
+      // 弹出窗口通常有较窄的尺寸，且有window.close方法
+      const isPopup = window.innerWidth < 800 && window.innerHeight < 800;
+      
+      if (isPopup && typeof chromeWindow.chrome !== 'undefined' && chromeWindow.chrome.tabs) {
+        // 在弹出窗口模式下，使用chrome.tabs API在新标签页打开链接
+        chromeWindow.chrome.tabs.create({ url: bookmark.url });
+        // 关闭弹出窗口
+        if (window.close) {
+          window.close();
+        }
+      } else {
+        // 在标签页模式或没有chrome.tabs API时，在当前页打开链接
+        window.location.href = bookmark.url;
+      }
+    } else {
+      // 在普通网页模式下，直接在当前窗口打开链接
+      window.location.href = bookmark.url;
+    }
   }
 
   const handleEdit = (e: React.MouseEvent): void => {
