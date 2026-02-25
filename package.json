@@ -7,7 +7,11 @@
     "build": "vite build",
     "build:plugin": "VITE_PLUGIN=true vite build",
     "preview": "vite preview",
-    "changelog": "auto-changelog --unreleased --commit-limit false && git add CHANGELOG.md"
+    "changelog": "auto-changelog --unreleased --commit-limit false && git add CHANGELOG.md",
+    "lint": "eslint . --ext ts,tsx,js,jsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext ts,tsx,js,jsx --fix",
+    "prettier": "prettier --write .",
+    "lint-staged": "lint-staged"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -17,8 +21,19 @@
   "devDependencies": {
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.53.0",
+    "@typescript-eslint/parser": "^8.53.0",
     "@vitejs/plugin-react": "^4.3.1",
     "auto-changelog": "^2.5.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.0",
     "sass": "^1.69.0",
     "typescript": "^5.9.3",
     "vite": "^5.3.4"

@@ -1,8 +1,8 @@
-import { useRef, useCallback, useEffect } from 'react'
+import React, { useRef, useCallback, useEffect } from 'react'
 import { FolderCardProps } from '../../types'
 import './index.scss'
 
-function FolderCard({ folder, onClick, onRename, onDelete, isMobile, showActions = false, onActionsToggle }: FolderCardProps): React.ReactElement {
+const FolderCard: React.FC<FolderCardProps> = ({ folder, onClick, onRename, onDelete, isMobile, showActions = false, onActionsToggle }): React.ReactElement => {
   const cardRef = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -65,4 +65,4 @@ function FolderCard({ folder, onClick, onRename, onDelete, isMobile, showActions
   )
 }
 
-export default FolderCard
+export default React.memo(FolderCard)

@@ -158,9 +158,47 @@ export interface UseResponsiveReturn {
   isMobile: boolean;
 }
 
+// usePathManager hook 选项类型
+export interface UsePathManagerOptions {
+  isPluginMode: boolean;
+  basename: string;
+}
+
+// usePathManager hook 返回类型
+export interface UsePathManagerReturn {
+  currentPath: string[];
+  updatePath: (path: string[]) => void;
+  navigateToChild: (folderName: string) => void;
+  navigateBack: () => void;
+  navigateHome: () => void;
+}
+
 // 列表项类型（用于渲染）
 export interface ListItem {
   type: 'bookmark' | 'folder';
   data: Bookmark | Folder;
   isPinned?: boolean;
 }
+
+// 存储数据类型
+export interface StorageData {
+  bookmarks: Bookmark[];
+  folders: Folder[];
+}
+
+// 错误类型定义
+export interface AppError {
+  code: string;
+  message: string;
+  details?: any;
+}
+
+// 错误代码定义
+export const ErrorCodes = {
+  NETWORK_ERROR: 'NETWORK_ERROR',
+  STORAGE_ERROR: 'STORAGE_ERROR',
+  PARSING_ERROR: 'PARSING_ERROR',
+  PERMISSION_ERROR: 'PERMISSION_ERROR',
+  VALIDATION_ERROR: 'VALIDATION_ERROR',
+  UNKNOWN_ERROR: 'UNKNOWN_ERROR'
+} as const;

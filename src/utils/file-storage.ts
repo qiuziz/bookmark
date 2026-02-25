@@ -1,10 +1,11 @@
-import { Bookmark, Folder } from '../types';
+import { StorageData } from '../types';
+import logger from './logger';
 
 // 添加File System Access API的类型定义
 declare global {
   interface Window {
-    showOpenFilePicker: (options?: any) => Promise<FileSystemFileHandle[]>;
-    showSaveFilePicker: (options?: any) => Promise<FileSystemFileHandle>;
+    showOpenFilePicker: (options?: FilePickerOptions) => Promise<FileSystemFileHandle[]>;
+    showSaveFilePicker: (options?: FilePickerOptions) => Promise<FileSystemFileHandle>;
     chrome?: {
       storage: {
         local: {
@@ -16,18 +17,28 @@ declare global {
     };
   }
   
-  interface FileSystemFileHandle {
-    queryPermission: (options?: { mode: 'read' | 'readwrite' }) => Promise<string>;
-    requestPermission: (options?: { mode: 'read' | 'readwrite' }) => Promise<string>;
-    getFile: () => Promise<File>;
+  interface FilePickerOptions {
+    types?: Array<{
+      description?: string;
+      accept: Record<string, string[]>;
+    }>;
+    excludeAcceptAllOption?: boolean;
+    suggestedName?: string;
   }
   
-  // 我们不需要重新定义createWritable和write，因为TypeScript标准库已经有了这些定义
-}
-
-export interface StorageData {
-  bookmarks: Bookmark[];
-  folders: Folder[];
+  // 扩展FileSystemFileHandle类型定义，确保包含我们需要的方法
+  interface FileSystemFileHandle {
+    queryPermission(options?: { mode: 'read' | 'readwrite' }): Promise<string>;
+    requestPermission(options?: { mode: 'read' | 'readwrite' }): Promise<string>;
+    getFile(): Promise<File>;
+    createWritable(options?: any): Promise<FileSystemWritableFileStream>;
+  }
+  
+  // 扩展FileSystemWritableFileStream类型定义
+  interface FileSystemWritableFileStream {
+    write(data: string | ArrayBuffer | Blob): Promise<void>;
+    close(): Promise<void>;
+  }
 }
 
 export class FileStorage {
@@ -55,6 +66,34 @@ export class FileStorage {
   // 检查是否已授权文件访问
   public async isAuthorized(): Promise<boolean> {
     try {
+      // 检查授权状态
+      const isAuthStateValid = await this.checkAuthState();
+      if (!isAuthStateValid) {
+        return false;
+      }
+      
+      // 检查IndexedDB中是否有文件句柄
+      const handle = await this.loadFileHandleFromIDB();
+      if (!handle) {
+        return false;
+      }
+      
+      // 检查是否为FileSystemFileHandle对象
+      if (typeof handle.kind !== 'string') {
+        return false;
+      }
+      
+      // 验证文件句柄权限
+      return await this.verifyFileHandlePermission(handle);
+    } catch (error) {
+      logger.error('检查授权状态失败:', error);
+      return false;
+    }
+  }
+
+  // 检查授权状态
+  private async checkAuthState(): Promise<boolean> {
+    try {
       // 使用chrome.storage API检查授权状态
       if (window.chrome && window.chrome.storage && window.chrome.storage.local) {
         const result = await new Promise<{ [key: string]: any }>((resolve) => {
@@ -62,71 +101,33 @@ export class FileStorage {
             resolve(data as { [key: string]: any });
           });
         });
-        // 检查授权状态是否为true
-        const isAuthorized = result && result[this.AUTH_STATE_KEY] === true;
-        if (!isAuthorized) {
-          console.log('chrome.storage中授权状态为false或不存在，继续检查IndexedDB');
-        } else {
-          console.log('chrome.storage中授权状态为true，继续检查IndexedDB');
-        }
+        return result && result[this.AUTH_STATE_KEY] === true;
       } else {
         // 非插件模式，使用localStorage
         const stored = localStorage.getItem(this.AUTH_STATE_KEY);
-        if (stored !== 'true') {
-          console.log('localStorage中授权状态不存在或为false，继续检查IndexedDB');
-        } else {
-          console.log('localStorage中授权状态为true，继续检查IndexedDB');
+        return stored === 'true';
+      }
+    } catch (error) {
+      logger.error('检查授权状态失败:', error);
+      return false;
+    }
+  }
+
+  // 验证文件句柄权限
+  private async verifyFileHandlePermission(handle: FileSystemFileHandle): Promise<boolean> {
+    try {
+      const permission = await handle.queryPermission({ mode: 'readwrite' });
+      if (permission !== 'granted') {
+        // 如果权限是prompt，尝试请求权限
+        if (permission === 'prompt') {
+          const requestPermission = await handle.requestPermission({ mode: 'readwrite' });
+          return requestPermission === 'granted';
         }
-      }
-      
-      // 检查IndexedDB中是否有文件句柄
-      const handle = await this.loadFileHandleFromIDB();
-      // 严格检查文件句柄是否有效
-      if (!handle) {
-        console.log('IndexedDB中没有文件句柄，需要重新授权');
         return false;
       }
-      
-      // 检查是否为FileSystemFileHandle对象
-      if (typeof handle.kind !== 'string') {
-        console.log('IndexedDB中的对象不是FileSystemFileHandle:', handle);
-        return false;
-      }
-      
-      // 验证文件句柄权限
-      try {
-        const permission = await handle.queryPermission({ mode: 'readwrite' });
-        console.log('文件句柄权限状态:', permission);
-        if (permission !== 'granted') {
-          console.log('文件句柄权限不足或需要重新授权:', permission);
-          
-          // 如果权限是prompt，尝试请求权限
-          if (permission === 'prompt') {
-            try {
-              const requestPermission = await handle.requestPermission({ mode: 'readwrite' });
-              console.log('已请求文件句柄权限:', requestPermission);
-              if (requestPermission === 'granted') {
-                console.log('文件句柄权限请求成功');
-              } else {
-                console.log('文件句柄权限请求失败:', requestPermission);
-                return false;
-              }
-            } catch (error) {
-              console.error('请求文件句柄权限失败:', error);
-              return false;
-            }
-          }
-          
-          return false;
-        }
-      } catch (error) {
-        console.error('验证文件句柄权限失败:', error);
-        return false;
-      }
-      
       return true;
     } catch (error) {
-      console.error('检查授权状态失败:', error);
+      logger.error('验证文件句柄权限失败:', error);
       return false;
     }
   }
@@ -143,8 +144,7 @@ export class FileStorage {
         const db = (event.target as IDBOpenDBRequest).result;
         if (!db.objectStoreNames.contains(this.IDB_STORE)) {
           // 创建object store，不使用autoIncrement，使用字符串key
-          const store = db.createObjectStore(this.IDB_STORE);
-          console.log('已创建IndexedDB object store:', this.IDB_STORE);
+          db.createObjectStore(this.IDB_STORE);
         }
       };
     });
@@ -154,22 +154,22 @@ export class FileStorage {
   private async loadFileHandleFromIDB(): Promise<FileSystemFileHandle | null> {
     try {
       const db = await this.initIDB();
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         const transaction = db.transaction([this.IDB_STORE], 'readonly');
         const store = transaction.objectStore(this.IDB_STORE);
         const request = store.get(this.IDB_KEY);
         
-        request.onerror = () => reject(request.error);
+        request.onerror = () => {
+          logger.error('从IndexedDB加载文件句柄失败:', request.error);
+          resolve(null);
+        };
         request.onsuccess = () => {
           const handle = request.result as FileSystemFileHandle | undefined;
-          console.log('从IndexedDB加载的文件句柄:', handle);
-          console.log('文件句柄类型:', typeof handle);
-          console.log('文件句柄是否为FileSystemFileHandle:', handle && typeof handle.kind === 'string');
           resolve(handle || null);
         };
       });
     } catch (error) {
-      console.error('Failed to load file handle from IndexedDB:', error);
+      logger.error('从IndexedDB加载文件句柄失败:', error);
       return null;
     }
   }
@@ -177,7 +177,6 @@ export class FileStorage {
   // 保存文件句柄到IndexedDB
   private async saveFileHandleToIDB(handle: FileSystemFileHandle): Promise<void> {
     try {
-      console.log('开始保存文件句柄到IndexedDB...', handle);
       const db = await this.initIDB();
       return new Promise((resolve, reject) => {
         const transaction = db.transaction([this.IDB_STORE], 'readwrite');
@@ -186,48 +185,36 @@ export class FileStorage {
         // 先删除旧的文件句柄
         const deleteRequest = store.delete(this.IDB_KEY);
         deleteRequest.onsuccess = () => {
-          console.log('已删除旧的文件句柄');
           // 然后添加新的文件句柄
           const addRequest = store.add(handle, this.IDB_KEY);
           
           addRequest.onerror = () => {
-            console.error('添加文件句柄失败:', addRequest.error);
+            logger.error('添加文件句柄失败:', addRequest.error);
             reject(addRequest.error);
           };
           
           addRequest.onsuccess = () => {
-            console.log('文件句柄已保存到IndexedDB');
             resolve();
           };
         };
         
         deleteRequest.onerror = () => {
-          console.error('删除文件句柄失败:', deleteRequest.error);
+          logger.error('删除文件句柄失败:', deleteRequest.error);
           // 如果删除失败，继续尝试添加
           const addRequest = store.add(handle, this.IDB_KEY);
           
           addRequest.onerror = () => {
-            console.error('添加文件句柄失败:', addRequest.error);
+            logger.error('添加文件句柄失败:', addRequest.error);
             reject(addRequest.error);
           };
           
           addRequest.onsuccess = () => {
-            console.log('文件句柄已保存到IndexedDB');
             resolve();
           };
         };
-        
-        transaction.oncomplete = () => {
-          console.log('IndexedDB事务完成');
-        };
-        
-        transaction.onerror = () => {
-          console.error('IndexedDB事务失败:', transaction.error);
-          reject(transaction.error);
-        };
       });
     } catch (error) {
-      console.error('Failed to save file handle to IndexedDB:', error);
+      logger.error('保存文件句柄到IndexedDB失败:', error);
       throw error;
     }
   }
@@ -257,12 +244,12 @@ export class FileStorage {
         this.saveAuthState();
         return true;
       } catch (error) {
-        console.error('保存文件句柄失败，取消授权:', error);
+        logger.error('保存文件句柄失败，取消授权:', error);
         this.fileHandle = null;
         return false;
       }
     } catch (error) {
-      console.error('File access authorization failed:', error);
+      logger.error('文件访问授权失败:', error);
       return false;
     }
   }
@@ -272,16 +259,13 @@ export class FileStorage {
     try {
       // 使用chrome.storage API保存授权状态
       if (window.chrome && window.chrome.storage && window.chrome.storage.local) {
-        window.chrome.storage.local.set({ [this.AUTH_STATE_KEY]: true }, () => {
-          console.log('授权状态已保存到chrome.storage');
-        });
+        window.chrome.storage.local.set({ [this.AUTH_STATE_KEY]: true });
       } else {
         // 非插件模式，使用localStorage
         localStorage.setItem(this.AUTH_STATE_KEY, 'true');
-        console.log('授权状态已保存到localStorage');
       }
     } catch (error) {
-      console.error('Failed to save auth state:', error);
+      logger.error('保存授权状态失败:', error);
     }
   }
 
@@ -290,13 +274,10 @@ export class FileStorage {
     try {
       // 如果没有文件句柄，尝试从IndexedDB加载
       if (!this.fileHandle) {
-        console.log('没有文件句柄，尝试从IndexedDB加载...');
         const loadedHandle = await this.loadFileHandleFromIDB();
         if (loadedHandle) {
           this.fileHandle = loadedHandle;
-          console.log('已从IndexedDB加载文件句柄');
         } else {
-          console.log('无法从IndexedDB加载文件句柄');
           return null;
         }
       }
@@ -304,17 +285,15 @@ export class FileStorage {
       // 验证权限
       const permission = await this.fileHandle.queryPermission({ mode: 'read' });
       if (permission !== 'granted') {
-        console.error('没有读取权限:', permission);
         return null;
       }
 
       // 读取文件内容
       const file = await this.fileHandle.getFile();
       const content = await file.text();
-      console.log('从文件读取到的数据:', content);
       return JSON.parse(content) as StorageData;
     } catch (error) {
-      console.error('Failed to read data from file:', error);
+      logger.error('从文件读取数据失败:', error);
       return null;
     }
   }
@@ -324,13 +303,10 @@ export class FileStorage {
     try {
       // 如果没有文件句柄，尝试从IndexedDB加载
       if (!this.fileHandle) {
-        console.log('没有文件句柄，尝试从IndexedDB加载...');
         const loadedHandle = await this.loadFileHandleFromIDB();
         if (loadedHandle) {
           this.fileHandle = loadedHandle;
-          console.log('已从IndexedDB加载文件句柄');
         } else {
-          console.log('无法从IndexedDB加载文件句柄');
           return false;
         }
       }
@@ -338,20 +314,17 @@ export class FileStorage {
       // 验证权限
       const permission = await this.fileHandle.queryPermission({ mode: 'readwrite' });
       if (permission !== 'granted') {
-        console.error('没有写入权限:', permission);
         return false;
       }
 
       // 写入文件
       const writable = await this.fileHandle.createWritable();
       const dataStr = JSON.stringify(data, null, 2);
-      console.log('写入文件的数据:', dataStr);
       await writable.write(dataStr);
       await writable.close();
-      console.log('数据已成功写入文件');
       return true;
     } catch (error) {
-      console.error('Failed to write data to file:', error);
+      logger.error('写入数据到文件失败:', error);
       return false;
     }
   }
@@ -364,10 +337,9 @@ export class FileStorage {
         bookmarks: JSON.parse(localStorage.getItem('bookmark-tool-data') || '{}').bookmarks || [],
         folders: JSON.parse(localStorage.getItem('bookmark-tool-data') || '{}').folders || []
       };
-      console.log('备份数据:', dataToBackup);
       return this.writeData(dataToBackup);
     } catch (error) {
-      console.error('Failed to backup data:', error);
+      logger.error('备份数据失败:', error);
       return false;
     }
   }
@@ -384,16 +356,13 @@ export class FileStorage {
     try {
       // 使用chrome.storage API清除授权状态
       if (window.chrome && window.chrome.storage && window.chrome.storage.local) {
-        window.chrome.storage.local.remove(this.AUTH_STATE_KEY, () => {
-          console.log('授权状态已从chrome.storage清除');
-        });
+        window.chrome.storage.local.remove(this.AUTH_STATE_KEY);
       } else {
         // 非插件模式，使用localStorage
         localStorage.removeItem(this.AUTH_STATE_KEY);
-        console.log('授权状态已从localStorage清除');
       }
     } catch (error) {
-      console.error('Failed to clear auth state:', error);
+      logger.error('清除授权状态失败:', error);
     }
   }
 
@@ -401,19 +370,21 @@ export class FileStorage {
   private async clearFileHandleFromIDB(): Promise<void> {
     try {
       const db = await this.initIDB();
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         const transaction = db.transaction([this.IDB_STORE], 'readwrite');
         const store = transaction.objectStore(this.IDB_STORE);
         const request = store.delete(this.IDB_KEY);
         
-        request.onerror = () => reject(request.error);
+        request.onerror = () => {
+          logger.error('从IndexedDB清除文件句柄失败:', request.error);
+          resolve();
+        };
         request.onsuccess = () => {
-          console.log('文件句柄已从IndexedDB清除');
           resolve();
         };
       });
     } catch (error) {
-      console.error('Failed to clear file handle from IndexedDB:', error);
+      logger.error('从IndexedDB清除文件句柄失败:', error);
     }
   }
 
@@ -438,7 +409,7 @@ export class FileStorage {
       const content = await file.text();
       return JSON.parse(content) as StorageData;
     } catch (error) {
-      console.error('Failed to import data from file:', error);
+      logger.error('从文件导入数据失败:', error);
       return null;
     }
   }
@@ -466,7 +437,7 @@ export class FileStorage {
       await writable.close();
       return true;
     } catch (error) {
-      console.error('Failed to export data to file:', error);
+      logger.error('导出数据到文件失败:', error);
       return false;
     }
   }

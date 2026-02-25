@@ -1,8 +1,8 @@
-import { useRef, useEffect, ReactElement } from 'react'
+import React, { useRef, useEffect, ReactElement } from 'react'
 import { BookmarkCardProps } from '../../types'
 import './index.scss'
 
-function BookmarkCard({ bookmark, onEdit, onDelete, onPin, isMobile, showActions = false, onActionsToggle }: BookmarkCardProps): ReactElement {
+const BookmarkCard: React.FC<BookmarkCardProps> = ({ bookmark, onEdit, onDelete, onPin, isMobile, showActions = false, onActionsToggle }): ReactElement => {
   const cardRef = useRef<HTMLDivElement>(null)
 
   useEffect((): (() => void) | void => {
@@ -121,4 +121,4 @@ function BookmarkCard({ bookmark, onEdit, onDelete, onPin, isMobile, showActions
   )
 }
 
-export default BookmarkCard
+export default React.memo(BookmarkCard)

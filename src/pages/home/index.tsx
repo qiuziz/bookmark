@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect, ReactElement } from 'react';
+import { useState, useCallback, useMemo, ReactElement } from 'react';
 
 // 根据环境变量判断是否为插件模式
 const isPluginMode = import.meta.env.VITE_PLUGIN === 'true';
@@ -6,14 +6,16 @@ const isPluginMode = import.meta.env.VITE_PLUGIN === 'true';
 const BASENAME = isPluginMode ? '' : '/bookmark';
 import logger from '../../utils/logger';
 import Header from '../../components/header';
-import BookmarkCard from '../../components/bookmark-card';
-import FolderCard from '../../components/folder-card';
 import BookmarkForm from '../../components/bookmark-form';
 import FolderForm from '../../components/folder-form';
 import ImportModal from '../../components/import-modal';
 import WallpaperSelector from '../../components/wallpaper-selector';
+import BookmarkGrid from '../../components/bookmark-grid';
+import PinnedBookmarks from '../../components/pinned-bookmarks';
+import EmptyState from '../../components/empty-state';
 import { useBookmarks } from '../../hooks/use-bookmarks';
 import { useResponsive } from '../../hooks/use-responsive';
+import { usePathManager } from '../../hooks/use-path-manager';
 import { useMessage } from '../../components/message';
 import { parseEdgeBookmarks, exportBookmarks } from '../../utils/edge-bookmarks';
 import { Bookmark, Folder, BookmarkFormData, FolderFormData } from '../../types';
@@ -39,6 +41,10 @@ function Home(): ReactElement {
   } = useBookmarks();
   const { isMobile, columns } = useResponsive();
   const { showMessage } = useMessage();
+  const { currentPath, navigateToChild, navigateBack, navigateHome } = usePathManager({ 
+    isPluginMode, 
+    basename: BASENAME 
+  });
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [editingFolder, setEditingFolder] = useState<Folder | null>(null);
   const [folderFormMode, setFolderFormMode] = useState<'create' | 'rename'>('create');
@@ -46,7 +52,6 @@ function Home(): ReactElement {
   const [showFolderForm, setShowFolderForm] = useState<boolean>(false);
   const [showImportModal, setShowImportModal] = useState<boolean>(false);
   const [showWallpaperSelector, setShowWallpaperSelector] = useState<boolean>(false);
-  const [currentPath, setCurrentPath] = useState<string[]>([]);
   const [activeCardId, setActiveCardId] = useState<{id: string, type: 'pinned' | 'regular' | 'folder'} | null>(null);
 
   const handleExport = useCallback(async (): Promise<void> => {
@@ -427,73 +432,16 @@ function Home(): ReactElement {
   }, [importFromFile, showMessage]);
 
   const handleFolderClick = useCallback((folder: Folder): void => {
-    setCurrentPath((prev: string[]): string[] => [...prev, folder.title]);
-  }, []);
+    navigateToChild(folder.title);
+  }, [navigateToChild]);
 
   const handleBack = useCallback((): void => {
-    setCurrentPath((prev: string[]): string[] => prev.slice(0, -1));
-  }, []);
+    navigateBack();
+  }, [navigateBack]);
 
   const handleHome = useCallback((): void => {
-    setCurrentPath([]);
-  }, []);
-
-  useEffect((): void => {
-    if (isPluginMode) {
-      // 浏览器插件环境下，不使用URL来管理路径状态
-      // 初始路径为空数组
-      setCurrentPath([]);
-    } else {
-      let pathString = window.location.pathname;
-    if (pathString.startsWith(BASENAME)) {
-      pathString = pathString.slice(BASENAME.length + 1);
-    } else {
-      pathString = pathString.slice(1);
-    }
-    if (pathString) {
-      try {
-        const path = JSON.parse(decodeURIComponent(pathString));
-        setCurrentPath(path);
-      } catch {
-        logger.error('Failed to parse path from URL');
-      }
-    }
-    }
-	}, [isPluginMode]);
-	
-
-  useEffect((): (() => void) | void => {
-    const handlePopState = (): void => {
-      let pathString = window.location.pathname;
-      if (pathString.startsWith(BASENAME)) {
-        pathString = pathString.slice(BASENAME.length + 1);
-      } else {
-        pathString = pathString.slice(1);
-      }
-      if (pathString) {
-        try {
-          const path = JSON.parse(decodeURIComponent(pathString));
-          setCurrentPath(path);
-        } catch {
-          logger.error('Failed to parse path from URL');
-        }
-      } else {
-        setCurrentPath([]);
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return (): void => window.removeEventListener('popstate', handlePopState);
-  }, []);
-
-  useEffect((): void => {
-    if (!isPluginMode) {
-      // 正常模式下，更新URL以反映当前路径
-      const path = currentPath.length > 0 ? `/${currentPath.join('/')}` : '';
-      window.history.replaceState({}, '', `${BASENAME}${path}`);
-    }
-    // 插件模式下不修改URL，保留当前路径状态在内存中
-  }, [currentPath, isPluginMode]);
+    navigateHome();
+  }, [navigateHome]);
 
   const handlePin = useCallback(
     (bookmark: Bookmark): void => {
@@ -538,76 +486,34 @@ function Home(): ReactElement {
       <main className="main-content">
         {hasContent ? (
           <>
-            {currentPath.length === 0 && pinnedBookmarks.length > 0 && (
-              <>
-                <div
-                  className="cards-grid"
-                  style={
-                    {
-                      '--columns': columns
-                    } as React.CSSProperties
-                  }
-                >
-                  {pinnedBookmarks.map((bookmark: Bookmark, index: number) => (
-                    <BookmarkCard
-                      key={`pinned-${bookmark.id}-${index}`}
-                      bookmark={bookmark}
-                      onEdit={handleEdit}
-                      onDelete={handleDeleteBookmark}
-                      onPin={handlePin}
-                      isMobile={isMobile}
-                      showActions={activeCardId?.id === bookmark.id && activeCardId?.type === 'pinned'}
-                      onActionsToggle={() => handleCardActionsToggle(bookmark.id, 'pinned')}
-                    />
-                  ))}
-                </div>
-                <div className="divider"></div>
-              </>
+            {currentPath.length === 0 && (
+              <PinnedBookmarks
+                bookmarks={pinnedBookmarks}
+                columns={columns}
+                isMobile={isMobile}
+                activeCardId={activeCardId}
+                onEdit={handleEdit}
+                onDelete={handleDeleteBookmark}
+                onPin={handlePin}
+                onCardActionsToggle={handleCardActionsToggle}
+              />
             )}
-            <div
-              className="cards-grid"
-              style={
-                {
-                  '--columns': columns
-                } as React.CSSProperties
-              }
-            >
-              {displayItems.map((item: Folder | Bookmark, index: number) => {
-                if ('url' in item) {
-                  return (
-                    <BookmarkCard
-                      key={`bookmark-${item.id}-${index}`}
-                      bookmark={item}
-                      onEdit={handleEdit}
-                      onDelete={handleDeleteBookmark}
-                      onPin={handlePin}
-                      isMobile={isMobile}
-                      showActions={activeCardId?.id === item.id && activeCardId?.type === 'regular'}
-                      onActionsToggle={() => handleCardActionsToggle(item.id, 'regular')}
-                    />
-                  );
-                }
-                return (
-                  <FolderCard
-                    key={`folder-${item.id}-${index}`}
-                    folder={item}
-                    onClick={handleFolderClick}
-                    onRename={handleRenameFolder}
-                    onDelete={handleDeleteFolder}
-                    isMobile={isMobile}
-                    showActions={activeCardId?.id === item.id && activeCardId?.type === 'folder'}
-                    onActionsToggle={() => handleCardActionsToggle(item.id, 'folder')}
-                  />
-                );
-              })}
-            </div>
+            <BookmarkGrid
+              items={displayItems}
+              columns={columns}
+              isMobile={isMobile}
+              activeCardId={activeCardId}
+              onBookmarkEdit={handleEdit}
+              onBookmarkDelete={handleDeleteBookmark}
+              onBookmarkPin={handlePin}
+              onFolderClick={handleFolderClick}
+              onFolderRename={handleRenameFolder}
+              onFolderDelete={handleDeleteFolder}
+              onCardActionsToggle={handleCardActionsToggle}
+            />
           </>
         ) : (
-          <div className="empty-state">
-            <div className="empty-icon">📚</div>
-            <h2>开始管理您的书签</h2>
-            <p>点击右上角的"添加"按钮来添加第一个书签</p>
-          </div>
+          <EmptyState />
         )}
       </main>
 

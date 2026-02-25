@@ -2,11 +2,12 @@ import { useState, useEffect, useCallback } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { Bookmark, Folder, UseBookmarksReturn } from '../types'
 import { FileStorage } from '../utils/file-storage'
+import logger from '../utils/logger'
+import errorHandler from '../utils/error-handler'
 
 const STORAGE_KEY = 'bookmark-tool-data'
 
 const defaultBookmarks: Bookmark[] = []
-
 const defaultFolders: Folder[] = []
 
 export function useBookmarks(): UseBookmarksReturn & {
@@ -32,16 +33,9 @@ export function useBookmarks(): UseBookmarksReturn & {
 			if (hasLoaded) return
 			hasLoaded = true
 
-			try {
-				console.log('开始加载数据...')
-
-				// 首先检查localStorage是否有数据
-				const saved = localStorage.getItem(STORAGE_KEY)
-				console.log('localStorage中的数据:', saved)
-
+			const { error } = await errorHandler.wrapAsync(async () => {
 				// 优先从文件加载数据
 				if (await storage.isAuthorized()) {
-					console.log('文件存储已授权，尝试从文件加载数据...')
 					const fileData = await storage.readData()
 					if (fileData) {
 						// 使用更安全的方式处理空数组，避免空数组被默认数据替换
@@ -51,60 +45,47 @@ export function useBookmarks(): UseBookmarksReturn & {
 						setBookmarks(bookmarksFromFile)
 						setFolders(foldersFromFile)
 						setIsFileStorageAuthorized(true)
-						console.log('数据已从文件加载:', { bookmarks: bookmarksFromFile, folders: foldersFromFile })
 
 						// 同时更新localStorage
 						const dataToSave = { bookmarks: bookmarksFromFile, folders: foldersFromFile }
 						localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
-						console.log('已更新localStorage')
 
 						// 标签页打开时执行一次备份
-						console.log('标签页打开，执行一次备份...')
 						await storage.backupData()
-					} else {
-						console.log('文件中没有数据')
-					}
-				} else if (saved) {
-					// 如果文件加载失败或未授权，从localStorage加载
-					console.log('从localStorage加载数据...')
-					try {
-						const data = JSON.parse(saved)
-						// 使用更安全的方式处理空数组，避免空数组被默认数据替换
-						const bookmarksFromStorage = Array.isArray(data.bookmarks) ? data.bookmarks : defaultBookmarks
-						const foldersFromStorage = Array.isArray(data.folders) ? data.folders : defaultFolders
-
-						setBookmarks(bookmarksFromStorage)
-						setFolders(foldersFromStorage)
-						console.log('数据已从localStorage加载:', { bookmarks: bookmarksFromStorage, folders: foldersFromStorage })
-
-						// 如果文件存储已授权，执行一次备份
-						if (await storage.isAuthorized()) {
-							console.log('文件存储已授权，执行一次备份...')
-							// 传递当前state的数据进行备份，而不是从localStorage读取
-							await storage.backupData({ bookmarks, folders })
-							console.log('数据已备份到文件')
-						}
-					} catch (parseError) {
-						console.error('解析localStorage数据失败:', parseError)
-						// 如果解析失败，使用默认数据
-						setBookmarks(defaultBookmarks)
-						setFolders(defaultFolders)
-						console.log('使用默认数据')
 					}
 				} else {
-					// 如果localStorage也没有数据，使用默认数据
-					setBookmarks(defaultBookmarks)
-					setFolders(defaultFolders)
-					console.log('使用默认数据')
+					// 从localStorage加载数据
+					const saved = localStorage.getItem(STORAGE_KEY)
+					if (saved) {
+						try {
+							const data = JSON.parse(saved)
+							// 使用更安全的方式处理空数组，避免空数组被默认数据替换
+							const bookmarksFromStorage = Array.isArray(data.bookmarks) ? data.bookmarks : defaultBookmarks
+							const foldersFromStorage = Array.isArray(data.folders) ? data.folders : defaultFolders
+
+							setBookmarks(bookmarksFromStorage)
+							setFolders(foldersFromStorage)
+						} catch (parseError) {
+							errorHandler.handleParsingError(parseError)
+							// 如果解析失败，使用默认数据
+							setBookmarks(defaultBookmarks)
+							setFolders(defaultFolders)
+						}
+					} else {
+						// 如果localStorage也没有数据，使用默认数据
+						setBookmarks(defaultBookmarks)
+						setFolders(defaultFolders)
+					}
 				}
 
 				// 检查文件存储是否已授权
 				setIsFileStorageAuthorized(await storage.isAuthorized())
 				// 设置为非首次加载
 				setIsFirstLoad(false)
-			} catch (error) {
-				console.error('Failed to load data:', error)
-				// 发生错误时，使用默认数据
+			})
+
+			// 如果发生错误，使用默认数据
+			if (error) {
 				setBookmarks(defaultBookmarks)
 				setFolders(defaultFolders)
 				// 设置为非首次加载
@@ -119,25 +100,20 @@ export function useBookmarks(): UseBookmarksReturn & {
 	// 保存数据到localStorage和文件
 	useEffect((): void => {
 		const saveData = async (): Promise<void> => {
-			try {
+			await errorHandler.wrapAsync(async () => {
 				// 只有在非首次加载时才保存数据，避免覆盖用户之前的数据
 				if (isFirstLoad) {
-					console.log('首次加载，跳过保存默认数据')
 					return
 				}
 
 				const data = { bookmarks, folders }
 				// 保存到localStorage
 				localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-				console.log('数据已保存到localStorage:', data)
 				// 如果已授权，保存到文件
 				if (isFileStorageAuthorized) {
 					await storage.writeData(data)
-					console.log('数据已保存到文件')
 				}
-			} catch (error) {
-				console.error('Failed to save data:', error)
-			}
+			})
 		}
 		saveData();
 	}, [bookmarks, folders, isFileStorageAuthorized, isFirstLoad])
@@ -192,45 +168,35 @@ export function useBookmarks(): UseBookmarksReturn & {
 	}, [])
 
 	const importBookmarks = useCallback((importedBookmarks: Bookmark[], importedFolders?: Folder[]): void => {
-		console.log('开始导入书签...')
-		console.log('原始书签数量:', bookmarks.length)
-		console.log('原始文件夹数量:', folders.length)
-		console.log('要导入的书签数量:', importedBookmarks.length)
-		console.log('要导入的文件夹数量:', importedFolders?.length || 0)
+		try {
+			// 过滤重复的书签（基于URL）
+			const updatedBookmarks = [...bookmarks, ...importedBookmarks.filter((b: Bookmark): boolean => {
+				return !bookmarks.some((existing: Bookmark): boolean => existing.url === b.url)
+			})]
+			setBookmarks(updatedBookmarks)
 
-		// 更新书签
-		const updatedBookmarks = [...bookmarks, ...importedBookmarks.filter((b: Bookmark): boolean => {
-			return !bookmarks.some((existing: Bookmark): boolean => existing.url === b.url)
-		})]
-		setBookmarks(updatedBookmarks)
+			// 过滤重复的文件夹（基于标题和路径）
+			let updatedFolders = [...folders]
+			if (importedFolders && importedFolders.length > 0) {
+				const existingFolderKeys = new Set(folders.map((f: Folder): string => JSON.stringify({ title: f.title, path: f.path })))
+				const newFolders = importedFolders.filter((f: Folder): boolean => !existingFolderKeys.has(JSON.stringify({ title: f.title, path: f.path })))
+				updatedFolders = [...folders, ...newFolders]
+				setFolders(updatedFolders)
+			}
 
-		// 更新文件夹
-		let updatedFolders = [...folders]
-		if (importedFolders && importedFolders.length > 0) {
-			const existingFolderKeys = new Set(folders.map((f: Folder): string => JSON.stringify({ title: f.title, path: f.path })))
-			const newFolders = importedFolders.filter((f: Folder): boolean => !existingFolderKeys.has(JSON.stringify({ title: f.title, path: f.path })))
-			updatedFolders = [...folders, ...newFolders]
-			setFolders(updatedFolders)
-		}
+			// 立即保存到localStorage，确保数据不会丢失
+			const dataToSave = { bookmarks: updatedBookmarks, folders: updatedFolders }
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
 
-		console.log('更新后的书签数量:', updatedBookmarks.length)
-		console.log('更新后的文件夹数量:', updatedFolders.length)
-
-		// 立即保存到localStorage，确保数据不会丢失
-		const dataToSave = { bookmarks: updatedBookmarks, folders: updatedFolders }
-		localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
-		console.log('导入的数据已立即保存到localStorage:', dataToSave)
-
-		// 如果已授权，保存到文件
-		if (isFileStorageAuthorized) {
-			storage.writeData(dataToSave)
-				.then((success: boolean): void => {
-					if (success) {
-						console.log('导入的数据已保存到文件')
-					} else {
-						console.error('保存到文件失败')
-					}
-				})
+			// 如果已授权，保存到文件
+			if (isFileStorageAuthorized) {
+				storage.writeData(dataToSave)
+					.catch((error: any): void => {
+						logger.error('保存导入数据到文件失败:', error)
+					})
+			}
+		} catch (error) {
+			logger.error('导入书签失败:', error)
 		}
 	}, [bookmarks, folders, isFileStorageAuthorized, storage])
 
@@ -255,17 +221,11 @@ export function useBookmarks(): UseBookmarksReturn & {
 	// 从文件导入数据
 	const importFromFile = useCallback(async (): Promise<void> => {
 		try {
-			console.log('开始从文件导入数据...')
 			const importedData = await storage.importFromFile()
 			if (importedData) {
-				console.log('导入的数据:', importedData)
-
 				// 确保导入的数据结构正确
-				const bookmarksToImport = importedData.bookmarks || []
-				const foldersToImport = importedData.folders || []
-
-				console.log('要导入的书签:', bookmarksToImport)
-				console.log('要导入的文件夹:', foldersToImport)
+				const bookmarksToImport = Array.isArray(importedData.bookmarks) ? importedData.bookmarks : []
+				const foldersToImport = Array.isArray(importedData.folders) ? importedData.folders : []
 
 				// 更新state
 				setBookmarks(bookmarksToImport)
@@ -274,18 +234,15 @@ export function useBookmarks(): UseBookmarksReturn & {
 				// 立即保存到localStorage，确保数据不会丢失
 				const dataToSave = { bookmarks: bookmarksToImport, folders: foldersToImport }
 				localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
-				console.log('数据已立即保存到localStorage:', dataToSave)
 
 				// 如果已授权，保存到文件
 				if (isFileStorageAuthorized) {
 					await storage.writeData(dataToSave)
-					console.log('数据已保存到文件')
 				}
-			} else {
-				console.log('没有导入到任何数据')
 			}
 		} catch (error) {
-			console.error('Failed to import data from file:', error)
+			logger.error('从文件导入数据失败:', error)
+			throw error // 重新抛出错误，以便调用者能够捕获并处理
 		}
 	}, [storage, isFileStorageAuthorized])
 

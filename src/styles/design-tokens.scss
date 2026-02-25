@@ -1,0 +1,84 @@
+// 现代化设计系统 - 更鲜艳、更有层次感
+$color-primary: #6366F1;
+$color-primary-hover: #7B68EE;
+$color-primary-light: #9B7BFF;
+$color-secondary: #9CA3AF;
+$color-success: #10B981;
+$color-success-light: #34D399;
+$color-warning: #F59E0B;
+$color-warning-light: #FFB74D;
+$color-danger: #EF4444;
+$color-danger-light: #F87171;
+$color-info: #3B82F6;
+$color-info-light: #60A5FA;
+$color-light: #F3F4F6;
+$color-light-hover: #F5F7FA;
+$color-dark: #1F2937;
+$color-background: #0F172A;
+$color-background-light: #1A1F2E;
+$color-surface: #FFFFFF;
+$color-surface-hover: #FAFAFA;
+$color-border: #E5E7EB;
+$color-border-light: #F0F0FF;
+$color-text: #1F2937;
+$color-text-secondary: #6B7280;
+$color-text-muted: #9CA3AF;
+$color-shadow: rgba(0, 0, 0, 0.1);
+$color-shadow-hover: rgba(0, 0, 0, 0.15);
+$color-shadow-lg: rgba(0, 0, 0, 0.15);
+$color-shadow-xl: rgba(0, 0, 0, 0.2);
+$color-overlay: rgba(0, 0, 0, 0.7);
+$color-frosted-glass: rgba(255, 255, 255, 0.7);
+$color-frosted-glass-dark: rgba(30, 30, 30, 0.7);
+$color-gradient-primary: linear-gradient(135deg, #667EEF 0%, #5568D3 100%);
+$color-gradient-success: linear-gradient(135deg, #10B981 0%, #059669 100%);
+$color-gradient-warning: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+$color-gradient-danger: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+$color-gradient-info: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+
+// 间距系统
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-xxl: 48px;
+
+// 圆角系统
+$border-radius-sm: 8px;
+$border-radius-md: 12px;
+$border-radius-lg: 16px;
+$border-radius-xl: 24px;
+$border-radius-full: 9999px;
+
+// 字体大小
+$font-size-xs: 12px;
+$font-size-sm: 14px;
+$font-size-base: 16px;
+$font-size-lg: 18px;
+$font-size-xl: 20px;
+$font-size-xxl: 24px;
+
+// 字体粗细
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// 过渡效果
+$transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+// 阴影系统
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+$shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+$shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.15);
+$shadow-inner: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+// 层级系统
+$z-index-dropdown: 1000;
+$z-index-modal: 2000;
+$z-index-toast: 3000;
+$z-index-tooltip: 4000;

@@ -1,0 +1,33 @@
+.pinned-bookmarks {
+  margin-bottom: 20px;
+
+  .pinned-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 20px 10px;
+    color: #333;
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--columns, 3), 1fr);
+    gap: 16px;
+    padding: 0 20px 10px;
+
+    @media (max-width: 768px) {
+      grid-template-columns: repeat(2, 1fr);
+      padding: 0 10px 10px;
+      gap: 10px;
+    }
+
+    @media (max-width: 480px) {
+      grid-template-columns: repeat(1, 1fr);
+    }
+  }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1), transparent);
+    margin: 20px 0;
+  }
+}

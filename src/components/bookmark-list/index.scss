@@ -1,0 +1,9 @@
+@use '../../styles/design-tokens' as *;
+
+.divider {
+  height: 1px;
+  background: $color-border;
+  margin: $spacing-lg 0;
+  opacity: 0.3;
+  width: 100%;
+}
