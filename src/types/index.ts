@@ -72,6 +72,8 @@ export interface HeaderProps {
   onFileImport?: () => void;
   isFileStorageSupported?: boolean;
   isFileStorageAuthorized?: boolean;
+  isFileStorageConfigured?: boolean;
+  onRestoreFileStorage?: () => void;
 }
 
 // FolderCard 组件属性

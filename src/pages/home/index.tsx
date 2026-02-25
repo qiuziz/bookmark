@@ -35,15 +35,17 @@ function Home(): ReactElement {
     deleteFolder,
     isFileStorageSupported,
     isFileStorageAuthorized,
+    isFileStorageConfigured,
     requestFileStorageAuthorization,
+    restoreFileStorageAuthorization,
     backupData,
     importFromFile
   } = useBookmarks();
   const { isMobile, columns } = useResponsive();
   const { showMessage } = useMessage();
-  const { currentPath, navigateToChild, navigateBack, navigateHome } = usePathManager({ 
-    isPluginMode, 
-    basename: BASENAME 
+  const { currentPath, navigateToChild, navigateBack, navigateHome } = usePathManager({
+    isPluginMode,
+    basename: BASENAME
   });
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [editingFolder, setEditingFolder] = useState<Folder | null>(null);
@@ -52,7 +54,7 @@ function Home(): ReactElement {
   const [showFolderForm, setShowFolderForm] = useState<boolean>(false);
   const [showImportModal, setShowImportModal] = useState<boolean>(false);
   const [showWallpaperSelector, setShowWallpaperSelector] = useState<boolean>(false);
-  const [activeCardId, setActiveCardId] = useState<{id: string, type: 'pinned' | 'regular' | 'folder'} | null>(null);
+  const [activeCardId, setActiveCardId] = useState<{ id: string, type: 'pinned' | 'regular' | 'folder' } | null>(null);
 
   const handleExport = useCallback(async (): Promise<void> => {
     try {
@@ -83,7 +85,7 @@ function Home(): ReactElement {
   }, [showMessage, handleExport]);
 
   const currentFolderId: string | null = useMemo(() => {
-   if (currentPath.length === 0) return null;
+    if (currentPath.length === 0) return null;
     const pathString = JSON.stringify(currentPath);
     const folder = folders.find((f: Folder): boolean => JSON.stringify(f.path) === pathString);
     return folder?.id || null;
@@ -264,12 +266,12 @@ function Home(): ReactElement {
         if (fileName.endsWith('.json')) {
           // 处理JSON文件
           const jsonData = JSON.parse(fileContent);
-          
+
           // 确保bookmarks是数组
           if (Array.isArray(jsonData.bookmarks)) {
             importedBookmarks = jsonData.bookmarks;
           }
-          
+
           // 确保folders是数组
           if (Array.isArray(jsonData.folders)) {
             importedFolders = jsonData.folders;
@@ -280,7 +282,7 @@ function Home(): ReactElement {
           importedFolders = folders;
           importedBookmarks = bookmarks;
         }
-        
+
         // 确保导入的数据是有效的
         importedBookmarks = importedBookmarks.map((bookmark: any) => ({
           ...bookmark,
@@ -295,7 +297,7 @@ function Home(): ReactElement {
           isPinned: bookmark.isPinned || false,
           createdAt: bookmark.createdAt || Date.now()
         }));
-        
+
         importedFolders = importedFolders.map((folder: any) => ({
           ...folder,
           // 确保必要字段存在
@@ -392,13 +394,28 @@ function Home(): ReactElement {
       if (success) {
         showMessage('文件存储授权成功，数据将自动备份', 'success');
       } else {
-        showMessage('文件存储授权失败', 'error');
+        showMessage('文件存储操作取消或失败', 'error');
       }
     } catch (error) {
       logger.error('文件存储授权错误:', error);
       showMessage('文件存储授权过程中发生错误', 'error');
     }
   }, [requestFileStorageAuthorization, showMessage]);
+
+  // 处理恢复文件存储授权
+  const handleRestoreFileStorage = useCallback(async (): Promise<void> => {
+    try {
+      const success = await restoreFileStorageAuthorization();
+      if (success) {
+        showMessage('已恢复同步，数据将自动备份', 'success');
+      } else {
+        showMessage('恢复同步操作取消或失败', 'error');
+      }
+    } catch (error) {
+      logger.error('恢复同步错误:', error);
+      showMessage('恢复同步过程中发生错误', 'error');
+    }
+  }, [restoreFileStorageAuthorization, showMessage]);
 
   // 处理手动备份
   const handleManualBackup = useCallback(async (): Promise<void> => {
@@ -407,7 +424,7 @@ function Home(): ReactElement {
         showMessage('请先授权文件存储访问权限', 'info');
         return;
       }
-      
+
       const success = await backupData();
       if (success) {
         showMessage('数据备份成功', 'success');
@@ -460,8 +477,8 @@ function Home(): ReactElement {
   );
 
   const handleCardActionsToggle = useCallback((cardId: string, cardType: 'pinned' | 'regular' | 'folder'): void => {
-    setActiveCardId((prev: {id: string, type: 'pinned' | 'regular' | 'folder'} | null): {id: string, type: 'pinned' | 'regular' | 'folder'} | null =>
-      prev?.id === cardId && prev?.type === cardType ? null : {id: cardId, type: cardType}
+    setActiveCardId((prev: { id: string, type: 'pinned' | 'regular' | 'folder' } | null): { id: string, type: 'pinned' | 'regular' | 'folder' } | null =>
+      prev?.id === cardId && prev?.type === cardType ? null : { id: cardId, type: cardType }
     );
   }, []);
 
@@ -477,10 +494,12 @@ function Home(): ReactElement {
         onHome={currentPath.length > 0 ? handleHome : undefined}
         currentPath={currentPath}
         onAuthorizeFileStorage={handleRequestFileStorage}
+        onRestoreFileStorage={handleRestoreFileStorage}
         onManualBackup={handleManualBackup}
         onFileImport={handleFileImport}
         isFileStorageSupported={isFileStorageSupported}
         isFileStorageAuthorized={isFileStorageAuthorized}
+        isFileStorageConfigured={isFileStorageConfigured}
       />
 
       <main className="main-content">

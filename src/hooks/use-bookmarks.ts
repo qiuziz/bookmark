@@ -13,13 +13,16 @@ const defaultFolders: Folder[] = []
 export function useBookmarks(): UseBookmarksReturn & {
 	isFileStorageSupported: boolean;
 	isFileStorageAuthorized: boolean;
+	isFileStorageConfigured: boolean;
 	requestFileStorageAuthorization: () => Promise<boolean>;
+	restoreFileStorageAuthorization: () => Promise<boolean>;
 	backupData: () => Promise<boolean>;
 	importFromFile: () => Promise<void>;
 } {
 	const [bookmarks, setBookmarks] = useState<Bookmark[]>(defaultBookmarks)
 	const [folders, setFolders] = useState<Folder[]>(defaultFolders)
 	const [isFileStorageAuthorized, setIsFileStorageAuthorized] = useState<boolean>(false)
+	const [isFileStorageConfigured, setIsFileStorageConfigured] = useState<boolean>(false)
 	const [isFirstLoad, setIsFirstLoad] = useState<boolean>(true)
 	const storage = FileStorage.getInstance()
 
@@ -78,8 +81,14 @@ export function useBookmarks(): UseBookmarksReturn & {
 					}
 				}
 
-				// 检查文件存储是否已授权
-				setIsFileStorageAuthorized(await storage.isAuthorized())
+				// 检查文件存储是否已授权和配置
+				const isAuth = await storage.isAuthorized();
+				setIsFileStorageAuthorized(isAuth);
+				if (!isAuth) {
+					setIsFileStorageConfigured(await storage.hasConfiguredStorage());
+				} else {
+					setIsFileStorageConfigured(true);
+				}
 				// 设置为非首次加载
 				setIsFirstLoad(false)
 			})
@@ -207,6 +216,33 @@ export function useBookmarks(): UseBookmarksReturn & {
 		}
 		const authorized = await storage.requestAuthorization()
 		setIsFileStorageAuthorized(authorized)
+		setIsFileStorageConfigured(authorized)
+		return authorized
+	}, [storage])
+
+	// 恢复文件存储授权
+	const restoreFileStorageAuthorization = useCallback(async (): Promise<boolean> => {
+		if (!storage.isSupported()) {
+			return false
+		}
+		const authorized = await storage.restoreAuthorization()
+		if (authorized) {
+			setIsFileStorageAuthorized(true)
+			setIsFileStorageConfigured(true)
+			// 授权恢复后读取数据合并
+			const fileData = await storage.readData();
+			if (fileData) {
+				const bookmarksFromFile = Array.isArray(fileData.bookmarks) ? fileData.bookmarks : defaultBookmarks
+				const foldersFromFile = Array.isArray(fileData.folders) ? fileData.folders : defaultFolders
+
+				// 简单的合并策略：以文件为准
+				setBookmarks(bookmarksFromFile)
+				setFolders(foldersFromFile)
+
+				const dataToSave = { bookmarks: bookmarksFromFile, folders: foldersFromFile }
+				localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
+			}
+		}
 		return authorized
 	}, [storage])
 
@@ -260,7 +296,9 @@ export function useBookmarks(): UseBookmarksReturn & {
 		importBookmarks,
 		isFileStorageSupported: storage.isSupported(),
 		isFileStorageAuthorized,
+		isFileStorageConfigured,
 		requestFileStorageAuthorization,
+		restoreFileStorageAuthorization,
 		backupData,
 		importFromFile
 	}
