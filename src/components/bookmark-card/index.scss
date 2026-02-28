@@ -1,17 +1,19 @@
+@use '../../styles/design-tokens' as *;
+
 .bookmark-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 16px 12px;
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 16px;
+  padding: $spacing-md $spacing-sm;
+  background: $glass-bg;
+  backdrop-filter: blur(#{$glass-blur});
+  -webkit-backdrop-filter: blur(#{$glass-blur});
+  border-radius: $border-radius-lg;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  transition: all $transition-spring;
+  box-shadow: $glass-shadow;
+  border: 1px solid $glass-border;
   position: relative;
   min-height: 110px;
   width: 100%;
@@ -20,21 +22,24 @@
   flex-shrink: 0;
   flex-basis: 0;
   min-width: 80px;
-  gap: 10px;
+  gap: $spacing-sm;
 
   &.actions-open {
     z-index: 100;
   }
 
+  // Hover Effect: 微妙的缩放和阴影增强，创造漂浮感
   &:hover {
-    transform: translateY(-6px) scale(1.02);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
-    background: rgba(255, 255, 255, 0.6);
-    border-color: rgba(255, 255, 255, 0.6);
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: $glass-shadow-hover;
+    background: $glass-bg-hover;
+    border-color: $glass-border-light;
   }
 
+  // Active Effect: 点击时的按压感
   &:active {
-    transform: translateY(-3px) scale(0.99);
+    transform: translateY(-2px) scale(0.98);
+    transition: all $transition-fast;
   }
 }
 
@@ -45,14 +50,20 @@
   align-items: center;
   justify-content: center;
   font-size: 24px;
-  margin-bottom: 10px;
+  margin-bottom: $spacing-xs;
   flex-shrink: 0;
+  transition: transform $transition-spring;
+
+  .bookmark-card:hover & {
+    transform: scale(1.1);
+  }
 
   .favicon-img {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    border-radius: 8px;
+    border-radius: $border-radius-md;
+    box-shadow: $shadow-sm;
   }
 }
 
@@ -67,37 +78,47 @@
 .bookmark-title {
   display: block;
   font-size: 13px;
-  font-weight: 500;
-  color: #333;
+  font-weight: $font-weight-medium;
+  color: $color-text;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  transition: color $transition-base;
+
+  .bookmark-card:hover & {
+    color: $color-primary;
+  }
 }
 
 .card-actions-trigger {
   position: absolute;
-  top: 4px;
-  right: 4px;
+  top: $spacing-xs;
+  right: $spacing-xs;
   width: 28px;
   height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: $border-radius-sm;
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: all $transition-fast;
   cursor: pointer;
   z-index: 20;
 
   .more-dots {
     font-size: 18px;
-    color: #666;
+    color: $color-text-secondary;
     line-height: 1;
+    transition: color $transition-fast;
   }
 
   &:hover {
     background: rgba(0, 0, 0, 0.08);
+
+    .more-dots {
+      color: $color-primary;
+    }
   }
 }
 
@@ -106,13 +127,13 @@
   height: 32px;
   top: 6px;
   right: 6px;
-  border-radius: 8px;
+  border-radius: $border-radius-md;
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(4px);
 
   .more-dots {
     font-size: 20px;
-    color: #666;
+    color: $color-text-secondary;
   }
 }
 
@@ -120,14 +141,17 @@
   opacity: 1;
 }
 
+// 悬浮菜单
 .bookmark-actions-overlay {
   position: absolute;
   top: 32px;
   right: 4px;
-  background: rgba(255, 255, 255, 0.98);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
   padding: 6px;
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  border-radius: $border-radius-md;
+  box-shadow: $shadow-lg;
+  border: 1px solid $color-border;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -136,7 +160,11 @@
   opacity: 0;
   visibility: hidden;
   transform: translateY(-8px) scale(0.95);
-  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    visibility 0.2s;
+  transform-origin: top right;
 }
 
 .bookmark-actions-overlay.visible {
@@ -148,36 +176,40 @@
 .action-btn {
   padding: 8px 12px;
   font-size: 13px;
+  font-weight: $font-weight-medium;
   border: none;
-  border-radius: 6px;
+  border-radius: $border-radius-sm;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all $transition-fast;
   text-align: left;
 
   &.pin {
-    background: #fff3e0;
-    color: #e65100;
+    background: rgba($color-warning, 0.1);
+    color: $color-warning-light;
 
     &:hover {
-      background: #ffe0b2;
+      background: rgba($color-warning, 0.15);
+      color: $color-warning;
     }
   }
 
   &.edit {
-    background: #e3f2fd;
-    color: #1976d2;
+    background: rgba($color-info, 0.1);
+    color: $color-info-light;
 
     &:hover {
-      background: #bbdefb;
+      background: rgba($color-info, 0.15);
+      color: $color-info;
     }
   }
 
   &.delete {
-    background: #ffebee;
-    color: #d32f2f;
+    background: rgba($color-danger, 0.1);
+    color: $color-danger-light;
 
     &:hover {
-      background: #ffcdd2;
+      background: rgba($color-danger, 0.15);
+      color: $color-danger;
     }
   }
 }
@@ -188,10 +220,10 @@
   right: 6px;
   min-width: 120px;
   padding: 8px;
-  border-radius: 10px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-  background: #fff;
-  backdrop-filter: blur(10px);
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-xl;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
   z-index: 1000;
 }
 
@@ -199,12 +231,12 @@
   padding: 12px 16px;
   font-size: 14px;
   min-height: 44px;
-  border-radius: 8px;
-  font-weight: 500;
+  border-radius: $border-radius-sm;
+  font-weight: $font-weight-medium;
   -webkit-tap-highlight-color: transparent;
 
   &:active {
-    transform: scale(0.98);
+    transform: scale(0.96);
   }
 }
 
@@ -212,20 +244,26 @@
   position: absolute;
   top: 4px;
   left: 4px;
-  background: #fff3e0;
-  color: #e65100;
+  background: $color-gradient-warning;
+  color: white;
   font-size: 10px;
   padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 500;
+  border-radius: $border-radius-sm;
+  font-weight: $font-weight-semibold;
   z-index: 10;
+  box-shadow: $shadow-sm;
 }
 
 .bookmark-card.pinned {
-  border: 2px solid #ff9800;
+  border: 2px solid $color-warning-light;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba($color-warning, 0.05) 100%
+  );
 
   &:hover {
-    border-color: #f57c00;
+    border-color: $color-warning;
   }
 }
 
@@ -241,7 +279,7 @@
   }
 
   &:active {
-    background: #f5f5f5;
+    background: $glass-bg-hover;
   }
 
   .bookmark-icon {
@@ -250,7 +288,7 @@
     font-size: 20px;
 
     .favicon-img {
-      border-radius: 6px;
+      border-radius: $border-radius-sm;
     }
   }
 
@@ -260,27 +298,8 @@
 
   .card-actions-trigger {
     opacity: 1;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.8);
     -webkit-tap-highlight-color: transparent;
-  }
-
-  .bookmark-actions-overlay {
-    position: absolute;
-    top: 24px;
-    right: 4px;
-    min-width: 90px;
-    z-index: 1000;
-    background: #fff;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-8px) scale(0.95);
-    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
-  }
-
-  .bookmark-actions-overlay.visible {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0) scale(1);
   }
 }
 
@@ -295,7 +314,7 @@
       font-size: 18px;
 
       .favicon-img {
-        border-radius: 6px;
+        border-radius: $border-radius-sm;
       }
     }
 

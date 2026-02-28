@@ -1,21 +1,24 @@
+@use '../../styles/design-tokens' as *;
+
 .header {
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.8);
   position: sticky;
   top: 0;
   z-index: 100;
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
+  transition: all $transition-base;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-sm;
   flex: 1;
   max-width: 70%;
   overflow: hidden;
@@ -24,24 +27,28 @@
 .header-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-sm;
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
+  padding: $spacing-md $spacing-lg;
   box-sizing: border-box;
   width: 100%;
 }
 
 .header-title {
   font-size: 18px;
-  font-weight: 600;
-  color: #333;
-  margin: 0 16px 0 8px;
+  font-weight: $font-weight-bold;
+  background: $color-gradient-primary;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0 $spacing-md 0 $spacing-sm;
   white-space: nowrap;
+  letter-spacing: -0.5px;
 }
 
 .header-btn {
@@ -49,17 +56,28 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 16px;
+  padding: 8px 16px;
   border: none;
-  border-radius: 8px;
+  border-radius: $border-radius-full;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: $font-weight-semibold;
   cursor: pointer;
-  transition: all 0.2s;
-  background: #f5f7fa;
-  color: #666;
+  transition: all $transition-spring;
+  background: $color-light;
+  color: $color-text-secondary;
   height: 36px;
   white-space: nowrap;
+
+  &:hover {
+    background: $color-light-hover;
+    color: $color-text;
+    transform: translateY(-2px);
+    box-shadow: $shadow-sm;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
 }
 
 .btn-icon {
@@ -70,48 +88,39 @@
   font-size: 14px;
 }
 
-.header-btn:hover {
-  background: #e8ebf0;
-  color: #333;
-  transform: translateY(-1px);
-}
-
-.header-btn:active {
-  transform: translateY(0);
-}
-
-.header-btn.back, .header-btn.home {
-  background: #f5f7fa;
-  color: #666;
+.header-btn.back,
+.header-btn.home {
+  background: transparent;
+  color: $color-text-secondary;
   font-size: 16px;
+  padding: 8px 12px;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
 }
 
 .header-btn.add {
-  background: #4285f4;
-  color: #fff;
-  font-size: 20px;
-  font-weight: 600;
+  background: $color-gradient-primary;
+  color: $color-surface;
+  box-shadow: $shadow-md;
+
+  &:hover {
+    box-shadow: $shadow-lg, $shadow-glow-primary;
+    transform: translateY(-2px) scale(1.02);
+  }
 }
 
-.header-btn.add:hover {
-  background: #3367d6;
-}
-
-.header-btn.import, .header-btn.export {
-  background: #f5f7fa;
-  color: #666;
-  font-size: 16px;
-}
-
+.header-btn.import,
+.header-btn.export,
 .header-btn.add-folder {
-  background: #f5f7fa;
-  color: #666;
-  font-size: 16px;
-}
+  background: transparent;
+  color: $color-text-secondary;
 
-.header-btn.add-folder:hover {
-  background: #e8ebf0;
-  color: #333;
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: $color-text;
+  }
 }
 
 .current-path {
@@ -119,36 +128,37 @@
   align-items: center;
   gap: 4px;
   font-size: 14px;
-  color: #666;
-  background: #f5f7fa;
-  padding: 8px 12px;
-  border-radius: 8px;
+  color: $color-text-secondary;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 6px 16px;
+  border-radius: $border-radius-full;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1;
   min-width: 0;
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .path-segment {
-  font-weight: 500;
-  color: #333;
+  font-weight: $font-weight-medium;
+  color: $color-text;
 }
 
 .path-separator {
-  color: #999;
+  color: $color-text-muted;
 }
 
 @media (max-width: 950px) {
   .header-left {
     max-width: 60%;
   }
-  
+
   .header-btn {
     padding: 8px 12px;
     font-size: 13px;
   }
-  
+
   .btn-text {
     font-size: 13px;
   }
@@ -158,18 +168,18 @@
   .header {
     padding: 12px 16px;
   }
-  
+
   .header-btn {
     padding: 8px 12px;
     height: 32px;
     font-size: 13px;
   }
-  
+
   .header-title {
     font-size: 16px;
     margin-right: 12px;
   }
-  
+
   .current-path {
     font-size: 13px;
     padding: 6px 10px;
@@ -180,27 +190,28 @@
   .header {
     padding: 10px 12px;
   }
-  
+
   .header-title {
     font-size: 14px;
     margin-right: 8px;
   }
-  
+
   .btn-text {
     display: none;
   }
-  
+
   .header-btn {
     padding: 8px;
     width: 32px;
     height: 32px;
     font-size: 14px;
+    border-radius: 50%;
   }
-  
+
   .header-right {
     gap: 8px;
   }
-  
+
   .current-path {
     font-size: 12px;
     padding: 4px 8px;
@@ -211,7 +222,7 @@
   .header-title {
     font-size: 13px;
   }
-  
+
   .header-btn {
     padding: 6px;
     width: 28px;
@@ -225,20 +236,21 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 16px;
-  border-radius: 8px;
-  background: #f5f7fa;
-  transition: all 0.2s;
+  padding: 8px 16px;
+  border-radius: $border-radius-full;
+  background: transparent;
+  transition: all $transition-base;
   height: 36px;
   white-space: nowrap;
   cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
 }
 
-.debug-toggle:hover {
-  background: #e8ebf0;
-}
-
-.debug-toggle input[type="checkbox"] {
+.debug-toggle input[type='checkbox'] {
   display: none;
 }
 
@@ -248,13 +260,13 @@
   gap: 6px;
   cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
-  color: #666;
-  transition: all 0.2s;
+  font-weight: $font-weight-medium;
+  color: $color-text-secondary;
+  transition: all $transition-base;
 }
 
-.debug-toggle input[type="checkbox"]:checked + label {
-  color: #4285f4;
+.debug-toggle input[type='checkbox']:checked + label {
+  color: $color-primary;
 }
 
 .debug-icon {
@@ -278,8 +290,9 @@
     padding: 8px;
     width: 32px;
     height: 32px;
+    border-radius: 50%;
   }
-  
+
   .debug-text {
     display: none;
   }

@@ -1,13 +1,15 @@
+@use '../../styles/design-tokens' as *;
+
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(var(--columns, 3), 1fr);
-  gap: 16px;
-  padding: 20px;
+  gap: $spacing-md;
+  padding: $spacing-lg;
 
   @media (max-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
-    padding: 10px;
-    gap: 10px;
+    padding: $spacing-sm;
+    gap: $spacing-sm;
   }
 
   @media (max-width: 480px) {

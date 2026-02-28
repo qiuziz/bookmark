@@ -1,17 +1,19 @@
+@use '../../styles/design-tokens' as *;
+
 .folder-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 16px 12px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 12px;
+  padding: $spacing-md $spacing-sm;
+  background: $glass-bg;
+  backdrop-filter: blur(#{$glass-blur});
+  -webkit-backdrop-filter: blur(#{$glass-blur});
+  border-radius: $border-radius-lg;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all $transition-spring;
+  box-shadow: $glass-shadow;
+  border: 1px solid $glass-border;
   position: relative;
   min-height: 100px;
   width: 100%;
@@ -23,35 +25,53 @@
   }
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%);
-    
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: $glass-shadow-hover;
+    background: linear-gradient(
+      135deg,
+      rgba($color-primary, 0.9) 0%,
+      rgba($color-secondary, 0.9) 100%
+    );
+    border-color: transparent;
+
     .folder-icon {
-      transform: scale(1.1);
+      transform: scale(1.1) rotate(5deg);
+      color: $color-surface;
     }
-    
+
     .folder-title {
-      color: #fff;
+      color: $color-surface;
+      font-weight: $font-weight-semibold;
+    }
+
+    .folder-actions-btn {
+      color: $color-surface;
+      background: rgba(255, 255, 255, 0.2);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
     }
   }
 
   &:active {
-    transform: translateY(-2px);
+    transform: translateY(-2px) scale(0.98);
+    transition: all $transition-fast;
   }
 }
 
 .folder-icon {
   width: 48px;
   height: 48px;
-  border-radius: 12px;
+  border-radius: $border-radius-md;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
-  margin-bottom: 10px;
+  margin-bottom: $spacing-xs;
   flex-shrink: 0;
-  transition: transform 0.2s ease;
+  transition: all $transition-spring;
+  color: $color-text-secondary;
 }
 
 .folder-info {
@@ -64,12 +84,12 @@
 .folder-title {
   display: block;
   font-size: 13px;
-  font-weight: 500;
-  color: #333;
+  font-weight: $font-weight-medium;
+  color: $color-text;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: color 0.2s;
+  transition: all $transition-base;
   max-width: 100%;
 }
 
@@ -97,7 +117,7 @@
       width: 36px;
       height: 36px;
       font-size: 18px;
-      border-radius: 8px;
+      border-radius: $border-radius-sm;
     }
 
     .folder-title {
@@ -108,8 +128,8 @@
 
 .folder-actions {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: $spacing-xs;
+  right: $spacing-xs;
   z-index: 1000;
 }
 
@@ -117,20 +137,21 @@
   width: 24px;
   height: 24px;
   border: none;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 6px;
+  background: $glass-bg;
+  backdrop-filter: blur(4px);
+  border-radius: $border-radius-sm;
   cursor: pointer;
   font-size: 14px;
-  color: #666;
+  color: $color-text-secondary;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: all $transition-fast;
 
   &:hover {
-    background: #fff;
-    color: #333;
+    background: $color-surface;
+    color: $color-primary;
   }
 }
 
@@ -167,22 +188,26 @@
   position: absolute;
   top: 100%;
   right: 0;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-radius: $border-radius-md;
+  box-shadow: $shadow-lg;
+  border: 1px solid $color-border;
   min-width: 80px;
   overflow: hidden;
-  animation: menuSlide 0.15s ease;
+  animation: menuSlide 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
   z-index: 1000;
+  transform-origin: top right;
 
   @keyframes menuSlide {
     from {
       opacity: 0;
-      transform: translateY(-8px);
+      transform: scale(0.95) translateY(-8px);
     }
+
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: scale(1) translateY(0);
     }
   }
 }
@@ -195,22 +220,24 @@
   background: none;
   text-align: left;
   font-size: 13px;
+  font-weight: $font-weight-medium;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background $transition-fast;
 
   &.rename {
-    color: #333;
+    color: $color-text;
 
     &:hover {
-      background: #f5f5f5;
+      background: rgba($color-primary, 0.05);
+      color: $color-primary;
     }
   }
 
   &.delete {
-    color: #e53935;
+    color: $color-danger;
 
     &:hover {
-      background: #ffebee;
+      background: rgba($color-danger, 0.05);
     }
   }
 }

@@ -1,23 +1,25 @@
+@use '../../styles/design-tokens' as *;
+
 .pinned-bookmarks {
-  margin-bottom: 20px;
+  margin-bottom: $spacing-lg;
 
   .pinned-title {
-    font-size: 16px;
-    font-weight: 600;
-    margin: 0 20px 10px;
-    color: #333;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    margin: 0 $spacing-lg $spacing-sm;
+    color: $color-text;
   }
 
   .cards-grid {
     display: grid;
     grid-template-columns: repeat(var(--columns, 3), 1fr);
-    gap: 16px;
-    padding: 0 20px 10px;
+    gap: $spacing-md;
+    padding: 0 $spacing-lg $spacing-sm;
 
     @media (max-width: 768px) {
       grid-template-columns: repeat(2, 1fr);
-      padding: 0 10px 10px;
-      gap: 10px;
+      padding: 0 $spacing-sm $spacing-sm;
+      gap: $spacing-sm;
     }
 
     @media (max-width: 480px) {
@@ -27,7 +29,12 @@
 
   .divider {
     height: 1px;
-    background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1), transparent);
-    margin: 20px 0;
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(0, 0, 0, 0.05),
+      transparent
+    );
+    margin: $spacing-lg 0;
   }
 }
